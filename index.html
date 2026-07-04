@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #F4EFE6;
+    color: #1C1B33;
+    padding: 20px;
+  }
+  .hero {
+    background: #1C1B33;
+    border-radius: 26px;
+    padding: 26px 28px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute; top: -30px; right: -30px; width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(255,138,80,0.28) 0%, rgba(255,138,80,0) 70%);
+  }
+  .hero h1 { font-size: 24px; margin: 0 0 6px 0; color: #FDFBF7; letter-spacing: -0.01em; position: relative; }
+  .hero .subtitle { color: #A9A6C4; font-size: 13px; margin: 0; position: relative; }
+  h2 { font-size: 15px; margin: 0 0 4px 0; color: #1C1B33; letter-spacing: -0.01em; }
+  .eyebrow { text-transform: uppercase; font-size: 10.5px; letter-spacing: .08em; color: #A79B86; font-weight: 700; }
+  .net-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .net-card {
+    background: #FFFFFF; border-radius: 20px; padding: 18px;
+    box-shadow: 0 4px 18px rgba(28,27,51,0.06);
+  }
+  .net-card.net { background: #1C1B33; }
+  .net-card h3 { margin: 0 0 8px 0; font-size: 11px; color: #A79B86; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .net-card.net h3 { color: #A9A6C4; }
+  .net-card .val { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .net-card.assets .val { color: #2F8F6E; }
+  .net-card.debts .val { color: #D0603F; }
+  .net-card.net .val { color: #FDFBF7; }
+  section { margin-bottom: 28px; }
+  section > .hint { font-size: 12px; color: #A79B86; margin-bottom: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .card {
+    background: #FFFFFF; border-radius: 20px; padding: 18px;
+    box-shadow: 0 4px 18px rgba(28,27,51,0.06);
+  }
+  .card h4 { margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #1C1B33; }
+  .field { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; gap: 10px; }
+  .field label { color: #8B8698; }
+  .field input {
+    border: 1.5px solid #EEE8DC; border-radius: 10px; padding: 5px 10px; font-size: 13px;
+    width: 128px; text-align: right; font-family: inherit; background: #FBF9F4; color: #1C1B33; font-weight: 600;
+  }
+  .field input:focus { outline: none; border-color: #FF8A50; box-shadow: 0 0 0 3px rgba(255,138,80,0.15); }
+  .note-badge {
+    font-size: 11px; color: #1C1B33; background: #FDEBD9; border-radius: 20px;
+    padding: 4px 12px; display: inline-block; margin-top: 8px; font-weight: 600;
+  }
+  .schedule { display: flex; gap: 12px; flex-wrap: wrap; }
+  .schedule .step {
+    flex: 1 1 160px; background: #FFFFFF; border-radius: 18px; padding: 14px;
+    box-shadow: 0 4px 18px rgba(28,27,51,0.06); border-left: 4px solid #FF8A50;
+  }
+  .schedule .step .amt { font-size: 19px; font-weight: 800; color: #1C1B33; }
+  .schedule .step .date { font-size: 12px; color: #A79B86; margin-top: 2px; }
+  .income-card { background: #FFFFFF; border-radius: 20px; padding: 22px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); }
+  .income-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .income-row label { font-size: 13px; color: #8B8698; min-width: 170px; font-weight: 600; }
+  .bar-bg { background: #F1ECE0; border-radius: 10px; height: 16px; overflow: hidden; flex: 1; position: relative; min-width: 160px; }
+  .bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg,#FF8A50,#FFB98A); transition: width .3s; }
+  .milestones { display: flex; justify-content: space-between; font-size: 11px; color: #A79B86; margin-top: 6px; font-weight: 600; }
+  .updated { font-size: 11px; color: #B7AF9C; margin-top: 20px; text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Деньги</h1>
+  <div class="subtitle">Снимок по скринам банковских приложений — 4 июля 2026. Цифры можно редактировать, сохраняются у тебя в браузере.</div>
+</div>
+
+<div class="net-summary">
+  <div class="net-card assets"><h3>Активы / накопления</h3><div class="val" id="sum-assets">—</div></div>
+  <div class="net-card debts"><h3>Долги</h3><div class="val" id="sum-debts">—</div></div>
+  <div class="net-card net"><h3>Итого (актив − долг)</h3><div class="val" id="sum-net">—</div></div>
+  <div class="net-card debts"><h3>Платежи в месяц (МТС+Тинькофф)</h3><div class="val" id="sum-payments">—</div></div>
+  <div class="net-card debts"><h3>Подписки/сервисы в месяц</h3><div class="val" id="sum-subs">—</div></div>
+  <div class="net-card net"><h3>Всего обязательных платежей/мес</h3><div class="val" id="sum-total-monthly">—</div></div>
+</div>
+
+<section>
+  <h2>Долги</h2>
+  <div class="hint">Суммы взяты со скринов от 4 июля — обнови, когда изменятся</div>
+  <div class="grid">
+    <div class="card">
+      <h4>МТС Банк — займы на покупку</h4>
+      <div class="field"><label>Долг 1 (платёж до 22 июля)</label><input type="number" class="debt-input" data-key="mts1" value="37190.70"></div>
+      <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="mts1pay" value="6673"></div>
+      <div class="field"><label>Долг 2 (платёж до 10 июля)</label><input type="number" class="debt-input" data-key="mts2" value="15606.37"></div>
+      <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="mts2pay" value="1835"></div>
+      <span class="note-badge">Ещё одобрено 1 000 000₽ лимита — это не долг, а предложение банка</span>
+    </div>
+    <div class="card">
+      <h4>Тинькофф — займы на покупку</h4>
+      <div class="field"><label>Долг 1 (11 июля, 4 платежа)</label><input type="number" class="debt-input" data-key="tcs1" value="7939.49"></div>
+      <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="tcs1pay" value="1990"></div>
+      <div class="field"><label>Долг 2 (7 июля, 13 платежей)</label><input type="number" class="debt-input" data-key="tcs2" value="34535.31"></div>
+      <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="tcs2pay" value="2730"></div>
+      <div class="field"><label>Долг 3 (1 авг, 3 платежа)</label><input type="number" class="debt-input" data-key="tcs3" value="36431.82"></div>
+      <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="tcs3pay" value="12500"></div>
+    </div>
+    <div class="card">
+      <h4>Сбер — кредитная карта</h4>
+      <div class="field"><label>Вся задолженность</label><input type="number" class="debt-input" data-key="sber" value="186531.96"></div>
+      <div class="field"><label>Кредитный лимит</label><input type="number" class="info-input" data-key="sberlimit" value="640000"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Обязательные платежи в месяц (подписки/сервисы)</h2>
+  <div class="hint">Список пока не полный — дополним, когда вспомнишь ещё</div>
+  <div class="grid">
+    <div class="card">
+      <h4>Подписки и сервисы</h4>
+      <div class="field"><label>Телефон</label><input type="number" class="info-input" data-key="subPhone" value="2200"></div>
+      <div class="field"><label>Тильда</label><input type="number" class="info-input" data-key="subTilda" value="750"></div>
+      <div class="field"><label>Клод</label><input type="number" class="info-input" data-key="subClaude" value="9200"></div>
+      <div class="field"><label>Таймвеб</label><input type="number" class="info-input" data-key="subTimeweb" value="2000"></div>
+      <div class="field"><label>ChatGPT</label><input type="number" class="info-input" data-key="subChatgpt" value="2100"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>График льготного периода Сбер</h2>
+  <div class="hint">Чтобы не платить проценты — гасить к этим датам (суммы из приложения, не редактируются)</div>
+  <div class="schedule">
+    <div class="step"><div class="amt">65 722,79 ₽</div><div class="date">до 31 июля</div></div>
+    <div class="step"><div class="amt">45 625,87 ₽</div><div class="date">до 31 августа</div></div>
+    <div class="step"><div class="amt">21 446,40 ₽</div><div class="date">до 30 сентября</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Активы и накопления</h2>
+  <div class="grid">
+    <div class="card">
+      <h4>Точка (бизнес, ИП)</h4>
+      <div class="field"><label>Депозит</label><input type="number" class="asset-input" data-key="tochka" value="181923.47"></div>
+      <span class="note-badge">Неснимаемый до 23 июля</span>
+    </div>
+    <div class="card">
+      <h4>Тинькофф — вклады</h4>
+      <div class="field"><label>Вклад 1</label><input type="number" class="asset-input" data-key="vklad1" value="500000"></div>
+      <div class="field"><label>Вклад 2</label><input type="number" class="asset-input" data-key="vklad2" value="50000"></div>
+      <div class="field"><label>Вклад 3</label><input type="number" class="asset-input" data-key="vklad3" value="100000"></div>
+      <div class="field"><label>Вклад 4</label><input type="number" class="asset-input" data-key="vklad4" value="100000"></div>
+      <span class="note-badge">Включает 49 500₽ пенсии — не доход от бизнеса, уже в остатке</span>
+    </div>
+    <div class="card">
+      <h4>Тинькофф — прочее</h4>
+      <div class="field"><label>Black карта</label><input type="number" class="asset-input" data-key="black" value="4678.20"></div>
+      <div class="field"><label>Копилка «ДР Кирилл»</label><input type="number" class="asset-input" data-key="kopilka" value="7002.55"></div>
+      <div class="field"><label>Накопительный счёт</label><input type="number" class="asset-input" data-key="nakop" value="0.61"></div>
+      <span class="note-badge">Детское пособие 3 600₽ — потрачено на подписки, в остатках уже не видно</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Доход от бизнеса — цель 500 000 ₽/мес</h2>
+  <div class="hint">Идём поэтапно: сначала стабильные 100к, потом 200к и дальше</div>
+  <div class="income-card">
+    <div class="income-row">
+      <label>Текущий доход/мес</label>
+      <input type="number" id="income-current" class="info-input" data-key="incomeCurrent" value="13500" style="width:110px">
+      <span style="font-size:12px;color:#a89c8b">9 000₽ на Точку + 4 500₽ на Тинькофф — уже учтены в активах выше, здесь просто отражён факт поступления</span>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="income-bar" style="width:0%"></div></div>
+    <div class="milestones"><span>0</span><span>100К</span><span>200К</span><span>500К цель</span></div>
+  </div>
+</section>
+
+<div class="updated" id="updated-at"></div>
+
+<script>
+const STORAGE_KEY = 'anna-money-dashboard-v1';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  document.getElementById('updated-at').textContent = 'Обновлено вручную: ' + new Date().toLocaleString('ru-RU');
+}
+
+const state = loadState();
+
+document.querySelectorAll('input[data-key]').forEach(input => {
+  const key = input.dataset.key;
+  if (state[key] !== undefined) input.value = state[key];
+  input.addEventListener('input', () => {
+    state[key] = parseFloat(input.value) || 0;
+    saveState(state);
+    recalc();
+  });
+});
+
+function fmt(n) {
+  return Math.round(n).toLocaleString('ru-RU') + ' ₽';
+}
+
+function recalc() {
+  const debtKeys = ['mts1','mts2','tcs1','tcs2','tcs3','sber'];
+  const assetKeys = ['tochka','vklad1','vklad2','vklad3','vklad4','black','kopilka','nakop'];
+  let debts = 0, assets = 0;
+  debtKeys.forEach(k => debts += parseFloat(document.querySelector(`[data-key="${k}"]`).value) || 0);
+  assetKeys.forEach(k => assets += parseFloat(document.querySelector(`[data-key="${k}"]`).value) || 0);
+  document.getElementById('sum-debts').textContent = fmt(debts);
+  document.getElementById('sum-assets').textContent = fmt(assets);
+  document.getElementById('sum-net').textContent = fmt(assets - debts);
+
+  const payKeys = ['mts1pay','mts2pay','tcs1pay','tcs2pay','tcs3pay'];
+  let payments = 0;
+  payKeys.forEach(k => { const el = document.querySelector(`[data-key="${k}"]`); if (el) payments += parseFloat(el.value) || 0; });
+  document.getElementById('sum-payments').textContent = fmt(payments);
+
+  const subKeys = ['subPhone','subTilda','subClaude','subTimeweb','subChatgpt'];
+  let subs = 0;
+  subKeys.forEach(k => { const el = document.querySelector(`[data-key="${k}"]`); if (el) subs += parseFloat(el.value) || 0; });
+  document.getElementById('sum-subs').textContent = fmt(subs);
+  document.getElementById('sum-total-monthly').textContent = fmt(payments + subs);
+
+  const income = parseFloat(document.getElementById('income-current').value) || 0;
+  const pct = Math.min(100, (income / 500000) * 100);
+  document.getElementById('income-bar').style.width = pct + '%';
+}
+
+recalc();
+document.getElementById('updated-at').textContent = 'Данные редактируются локально, сохраняются в этом браузере';
+</script>
+
+</body>
+</html>
