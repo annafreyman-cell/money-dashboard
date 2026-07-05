@@ -10,13 +10,14 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: #F4EFE6;
     color: #1C1B33;
-    padding: 20px;
+    padding-bottom: 96px;
   }
+  .app-shell { max-width: 480px; margin: 0 auto; padding: 20px 16px 8px; }
   .hero {
     background: #1C1B33;
     border-radius: 26px;
-    padding: 26px 28px;
-    margin-bottom: 24px;
+    padding: 26px 24px;
+    margin-bottom: 20px;
     position: relative;
     overflow: hidden;
   }
@@ -25,32 +26,34 @@
     position: absolute; top: -30px; right: -30px; width: 160px; height: 160px;
     background: radial-gradient(circle, rgba(255,138,80,0.28) 0%, rgba(255,138,80,0) 70%);
   }
-  .hero h1 { font-size: 24px; margin: 0 0 6px 0; color: #FDFBF7; letter-spacing: -0.01em; position: relative; }
-  .hero .subtitle { color: #A9A6C4; font-size: 13px; margin: 0; position: relative; }
+  .hero h1 { font-size: 22px; margin: 0 0 6px 0; color: #FDFBF7; letter-spacing: -0.01em; position: relative; }
+  .hero .subtitle { color: #A9A6C4; font-size: 12.5px; margin: 0; position: relative; }
+  h2.screen-title { font-size: 17px; margin: 4px 0 4px 0; color: #1C1B33; letter-spacing: -0.01em; }
   h2 { font-size: 15px; margin: 0 0 4px 0; color: #1C1B33; letter-spacing: -0.01em; }
   .eyebrow { text-transform: uppercase; font-size: 10.5px; letter-spacing: .08em; color: #A79B86; font-weight: 700; }
   .net-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-    margin-bottom: 26px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
   }
   .net-card {
-    background: #FFFFFF; border-radius: 20px; padding: 18px;
+    background: #FFFFFF; border-radius: 20px; padding: 16px;
     box-shadow: 0 4px 18px rgba(28,27,51,0.06);
   }
   .net-card.net { background: #1C1B33; }
-  .net-card h3 { margin: 0 0 8px 0; font-size: 11px; color: #A79B86; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .net-card h3 { margin: 0 0 8px 0; font-size: 10.5px; color: #A79B86; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
   .net-card.net h3 { color: #A9A6C4; }
-  .net-card .val { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+  .net-card .val { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
   .net-card.assets .val { color: #2F8F6E; }
   .net-card.debts .val { color: #D0603F; }
   .net-card.net .val { color: #FDFBF7; }
-  section { margin-bottom: 28px; }
-  section > .hint { font-size: 12px; color: #A79B86; margin-bottom: 14px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .screen { margin-bottom: 8px; }
+  section { margin-bottom: 22px; }
+  section > .hint { font-size: 12px; color: #A79B86; margin-bottom: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
   .card {
-    background: #FFFFFF; border-radius: 20px; padding: 18px;
+    background: #FFFFFF; border-radius: 20px; padding: 16px;
     box-shadow: 0 4px 18px rgba(28,27,51,0.06);
   }
   .card h4 { margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: #1C1B33; }
@@ -65,48 +68,80 @@
     font-size: 11px; color: #1C1B33; background: #FDEBD9; border-radius: 20px;
     padding: 4px 12px; display: inline-block; margin-top: 8px; font-weight: 600;
   }
-  .schedule { display: flex; gap: 12px; flex-wrap: wrap; }
+  .schedule { display: flex; flex-direction: column; gap: 10px; }
   .schedule .step {
-    flex: 1 1 160px; background: #FFFFFF; border-radius: 18px; padding: 14px;
+    background: #FFFFFF; border-radius: 18px; padding: 14px;
     box-shadow: 0 4px 18px rgba(28,27,51,0.06); border-left: 4px solid #FF8A50;
+    display: flex; align-items: baseline; justify-content: space-between;
   }
-  .schedule .step .amt { font-size: 19px; font-weight: 800; color: #1C1B33; }
-  .schedule .step .date { font-size: 12px; color: #A79B86; margin-top: 2px; }
-  .income-card { background: #FFFFFF; border-radius: 20px; padding: 22px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); }
+  .schedule .step .amt { font-size: 17px; font-weight: 800; color: #1C1B33; }
+  .schedule .step .date { font-size: 12px; color: #A79B86; }
+  .income-card { background: #FFFFFF; border-radius: 20px; padding: 20px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); }
   .income-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  .income-row label { font-size: 13px; color: #8B8698; min-width: 170px; font-weight: 600; }
-  .bar-bg { background: #F1ECE0; border-radius: 10px; height: 16px; overflow: hidden; flex: 1; position: relative; min-width: 160px; }
+  .income-row label { font-size: 13px; color: #8B8698; min-width: 140px; font-weight: 600; }
+  .income-row .hint2 { font-size: 11.5px; color: #a89c8b; flex-basis: 100%; }
+  .bar-bg { background: #F1ECE0; border-radius: 10px; height: 16px; overflow: hidden; flex: 1; position: relative; min-width: 120px; }
   .bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg,#FF8A50,#FFB98A); transition: width .3s; }
   .milestones { display: flex; justify-content: space-between; font-size: 11px; color: #A79B86; margin-top: 6px; font-weight: 600; }
   .updated { font-size: 11px; color: #B7AF9C; margin-top: 20px; text-align: right; }
 
-  .tx-card { background: #FFFFFF; border-radius: 20px; padding: 20px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); margin-bottom: 16px; }
-  .tx-totals { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 16px; }
-  .tx-totals div span.lbl { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #A79B86; font-weight: 700; margin-bottom: 2px; }
-  .tx-totals div span.v { font-size: 18px; font-weight: 800; }
-  .tx-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .tx-card { background: #FFFFFF; border-radius: 20px; padding: 18px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); margin-bottom: 16px; }
+  .tx-totals { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tx-totals div span.lbl { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #A79B86; font-weight: 700; margin-bottom: 2px; }
+  .tx-totals div span.v { font-size: 16px; font-weight: 800; }
+  .tx-form { display: flex; flex-direction: column; gap: 10px; }
   .tx-form .fld { display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: #8B8698; font-weight: 600; }
   .tx-form select, .tx-form input {
-    border: 1.5px solid #EEE8DC; border-radius: 10px; padding: 7px 10px; font-size: 13px;
-    font-family: inherit; background: #FBF9F4; color: #1C1B33; font-weight: 600;
+    border: 1.5px solid #EEE8DC; border-radius: 10px; padding: 8px 10px; font-size: 13px;
+    font-family: inherit; background: #FBF9F4; color: #1C1B33; font-weight: 600; width: 100%;
   }
   .tx-form select:focus, .tx-form input:focus { outline: none; border-color: #FF8A50; box-shadow: 0 0 0 3px rgba(255,138,80,0.15); }
-  .tx-form input[type="text"] { min-width: 150px; }
   .tx-form button {
-    background: #FF8A50; color: #fff; border: none; border-radius: 10px; padding: 9px 18px;
-    font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+    background: #FF8A50; color: #fff; border: none; border-radius: 14px; padding: 12px 18px;
+    font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 4px;
   }
   .tx-form button:hover { background: #FF7A38; }
-  .tx-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
-  .tx-table th { text-align: left; color: #A79B86; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; padding: 6px 8px; border-bottom: 1.5px solid #F1ECE0; }
-  .tx-table td { padding: 8px; border-bottom: 1px solid #F4EFE6; }
+  .tx-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+  .tx-table th { text-align: left; color: #A79B86; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 6px 4px; border-bottom: 1.5px solid #F1ECE0; }
+  .tx-table td { padding: 7px 4px; border-bottom: 1px solid #F4EFE6; }
   .tx-table td.amt-income { color: #2F8F6E; font-weight: 700; text-align: right; }
   .tx-table td.amt-expense { color: #D0603F; font-weight: 700; text-align: right; }
   .tx-del { background: none; border: none; color: #B7AF9C; cursor: pointer; font-size: 14px; }
   .tx-del:hover { color: #D0603F; }
+  .tx-scroll { overflow-x: auto; }
+
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #1C1B33;
+    display: flex; justify-content: space-around;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.18);
+    z-index: 50;
+  }
+  .bottom-nav button {
+    background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    color: #8C89A8; font-size: 10px; font-weight: 700; padding: 7px 14px; border-radius: 14px;
+    cursor: pointer; font-family: inherit; letter-spacing: .01em;
+  }
+  .bottom-nav button .ic { font-size: 19px; line-height: 1; }
+  .bottom-nav button.active { color: #FDFBF7; background: rgba(255,138,80,0.22); }
 </style>
 </head>
 <body>
 
+<div class="app-shell">
+
 <div class="hero">
   <h1>Деньги</h1>
+  <div class="subtitle">Снимок по скринам банковских приложений — 4 июля 2026. Цифры можно редактировать, сохраняются у тебя в браузере.</div>
+</div>
+
+<div class="screen" data-screen="overview">
+  <h2 class="screen-title">Обзор</h2>
+  <div class="net-summary">
+    <div class="net-card assets"><h3>Активы / накопления</h3><div class="val" id="sum-assets">—</div></div>
+    <div class="net-card debts"><h3>Долги</h3><div class="val" id="sum-debts">—</div></div>
+    <div class="net-card net"><h3>Итого (актив − долг)</h3><div class="val" id="sum-net">—</div></div>
+    <div class="net-card debts"><h3>Платежи в мес. (кредиты)</h3><div class="val" id="sum-payments">—</div></div>
+    <div class="net-card debts"><h3>Подписки/сервисы в мес.</h3><div class="val" id="sum-subs">—</div></div>
+    <div class="net-card net"><h3>Всего
