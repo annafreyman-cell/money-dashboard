@@ -186,6 +186,19 @@
   .ms-tile.total .lbl { color: #A9A6C4; }
   .ms-tile.total .v { color: #FDFBF7; font-size: 24px; }
   .ms-note { font-size: 13px; color: #A79B86; margin-top: 14px; line-height: 1.45; }
+  .ms-cats { margin-top: 16px; }
+  .ms-cats .cap { font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; color: #A79B86; font-weight: 700; margin: 0 0 8px; }
+  .ms-cats .row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed #EEE8DC; }
+  .ms-cats .row:last-child { border-bottom: none; }
+  .ms-cats .row .cn { font-size: 15px; color: #1C1B33; font-weight: 600; }
+  .ms-cats .row .cv { font-size: 15px; color: #D0603F; font-weight: 800; }
+
+  #trend-card h4 { margin: 0 0 14px; font-size: 17px; font-weight: 700; color: #1C1B33; }
+  .trend-legend { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; color: #8B8698; font-weight: 600; }
+  .trend-legend i.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+  .trend-legend i.in { background: #2F8F6E; }
+  .trend-legend i.out { background: #D0603F; }
+  .trend-empty { font-size: 14px; color: #A79B86; padding: 8px 0; }
 </style>
 </head>
 <body>
@@ -349,7 +362,14 @@
         <div class="ms-tile"><span class="lbl">Остаток на счетах — конец</span><span class="v" id="ms-assets-end">—</span></div>
         <div class="ms-tile total"><span class="lbl">Общий остаток на конец (актив − долг)</span><span class="v" id="ms-net-end">—</span></div>
       </div>
+      <div class="ms-cats" id="ms-expense-cats"></div>
       <div class="ms-note">Балансы расчётные — по операциям, что ты вносишь здесь. Если правишь остатки на счетах вручную на вкладках «Долги»/«Активы», начало и конец месяца могут быть приблизительными.</div>
+    </div>
+
+    <div class="tx-card" id="trend-card">
+      <h4>Динамика по месяцам</h4>
+      <div id="trend-chart"></div>
+      <div class="trend-legend"><span><i class="dot in"></i>Приход</span><span><i class="dot out"></i>Расход</span></div>
     </div>
 
     <div class="tx-card">
@@ -759,6 +779,63 @@ function renderMonthStats() {
   set('ms-net-end', fmt(s.netEnd));
   const nextBtn = document.getElementById('ms-next');
   if (nextBtn) nextBtn.disabled = isCurrentOrFuture();
+  renderExpenseCats(curYm());
+  renderTrend();
+}
+
+const EXPENSE_CAT_NAMES = { purchase: 'Покупки', subscription: 'Подписки/сайты' };
+function renderExpenseCats(ym) {
+  const el = document.getElementById('ms-expense-cats');
+  if (!el) return;
+  const txs = state.transactions || [];
+  const by = {};
+  txs.forEach(t => {
+    if (t.type === 'expense' && (t.date || '').slice(0, 7) === ym) {
+      const c = t.category || 'other';
+      by[c] = (by[c] || 0) + t.amount;
+    }
+  });
+  const keys = Object.keys(by).sort((a, b) => by[b] - by[a]);
+  if (keys.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="cap">Расход по категориям</div>' +
+    keys.map(c => `<div class="row"><span class="cn">${EXPENSE_CAT_NAMES[c] || 'Другое'}</span><span class="cv">−${fmt(by[c])}</span></div>`).join('');
+}
+
+const SHORT_MONTHS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+function renderTrend() {
+  const host = document.getElementById('trend-chart');
+  if (!host) return;
+  const txs = state.transactions || [];
+  const now = new Date();
+  const data = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    let inc = 0, exp = 0;
+    txs.forEach(t => {
+      if ((t.date || '').slice(0, 7) === ym) {
+        if (t.type === 'income') inc += t.amount; else exp += t.amount;
+      }
+    });
+    data.push({ m: d.getMonth() + 1, inc, exp });
+  }
+  if (data.every(d => d.inc === 0 && d.exp === 0)) {
+    host.innerHTML = '<div class="trend-empty">Пока нет операций за последние месяцы — добавь первые, и график оживёт.</div>';
+    return;
+  }
+  const max = Math.max(1, ...data.map(d => Math.max(d.inc, d.exp)));
+  const W = 340, H = 150, padB = 22, padT = 8, gs = W / 6, bw = 11, gap = 4;
+  let bars = '';
+  data.forEach((d, i) => {
+    const cx = i * gs + gs / 2;
+    const hIn = (d.inc / max) * (H - padB - padT);
+    const hEx = (d.exp / max) * (H - padB - padT);
+    const x1 = cx - bw - gap / 2, x2 = cx + gap / 2;
+    bars += `<rect x="${x1.toFixed(1)}" y="${(H - padB - hIn).toFixed(1)}" width="${bw}" height="${hIn.toFixed(1)}" rx="3" fill="#2F8F6E"/>`;
+    bars += `<rect x="${x2.toFixed(1)}" y="${(H - padB - hEx).toFixed(1)}" width="${bw}" height="${hEx.toFixed(1)}" rx="3" fill="#D0603F"/>`;
+    bars += `<text x="${cx.toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="#A79B86">${SHORT_MONTHS[d.m - 1]}</text>`;
+  });
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${bars}</svg>`;
 }
 document.getElementById('ms-prev').addEventListener('click', () => {
   curMonth.m--; if (curMonth.m < 1) { curMonth.m = 12; curMonth.y--; }
