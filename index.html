@@ -167,6 +167,25 @@
   .cat-toast img { width: 56px; height: 56px; object-fit: contain; flex-shrink: 0; }
   .cat-toast .cat-toast-msg { font-size: 15px; font-weight: 600; color: #1C1B33; line-height: 1.35; }
   @keyframes catToastIn { from { opacity: 0; transform: translateX(-50%) translateY(12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+  /* ===== Статистика за месяц ===== */
+  .month-switch { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .month-switch button {
+    background: #F1ECE0; border: none; width: 40px; height: 40px; border-radius: 12px;
+    font-size: 22px; line-height: 1; color: #1C1B33; cursor: pointer; font-family: inherit; font-weight: 700;
+  }
+  .month-switch button:disabled { opacity: .35; cursor: default; }
+  .month-switch .m-label { font-size: 18px; font-weight: 800; color: #1C1B33; letter-spacing: -0.01em; }
+  .month-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ms-tile { background: #FBF9F4; border-radius: 16px; padding: 14px; }
+  .ms-tile .lbl { display: block; font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; color: #A79B86; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
+  .ms-tile .v { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #1C1B33; }
+  .ms-tile.in .v { color: #2F8F6E; }
+  .ms-tile.out .v { color: #D0603F; }
+  .ms-tile.total { grid-column: 1 / -1; background: #1C1B33; }
+  .ms-tile.total .lbl { color: #A9A6C4; }
+  .ms-tile.total .v { color: #FDFBF7; font-size: 24px; }
+  .ms-note { font-size: 13px; color: #A79B86; margin-top: 14px; line-height: 1.45; }
 </style>
 </head>
 <body>
@@ -314,10 +333,29 @@
   <h2 class="screen-title"><img class="title-cat" id="cat-tx" alt="">Операции</h2>
   <section>
     <div class="hint">Расход с кредитного счёта увеличивает долг. Расход с дебетового/накопительного счёта уменьшает его остаток. Доход, наоборот, увеличивает дебетовый остаток или гасит долг, если выбран кредитный счёт.</div>
+
+    <div class="tx-card" id="month-stats">
+      <div class="month-switch">
+        <button type="button" id="ms-prev" aria-label="Предыдущий месяц">‹</button>
+        <span class="m-label" id="ms-label">—</span>
+        <button type="button" id="ms-next" aria-label="Следующий месяц">›</button>
+      </div>
+      <div class="month-grid">
+        <div class="ms-tile in"><span class="lbl">Приход за месяц</span><span class="v" id="ms-income">—</span></div>
+        <div class="ms-tile out"><span class="lbl">Расход за месяц</span><span class="v" id="ms-expense">—</span></div>
+        <div class="ms-tile"><span class="lbl">Разница (приход − расход)</span><span class="v" id="ms-diff">—</span></div>
+        <div class="ms-tile"><span class="lbl">Долг на конец месяца</span><span class="v" id="ms-debt-end">—</span></div>
+        <div class="ms-tile"><span class="lbl">Остаток на счетах — начало</span><span class="v" id="ms-assets-start">—</span></div>
+        <div class="ms-tile"><span class="lbl">Остаток на счетах — конец</span><span class="v" id="ms-assets-end">—</span></div>
+        <div class="ms-tile total"><span class="lbl">Общий остаток на конец (актив − долг)</span><span class="v" id="ms-net-end">—</span></div>
+      </div>
+      <div class="ms-note">Балансы расчётные — по операциям, что ты вносишь здесь. Если правишь остатки на счетах вручную на вкладках «Долги»/«Активы», начало и конец месяца могут быть приблизительными.</div>
+    </div>
+
     <div class="tx-card">
       <div class="tx-totals">
-        <div><span class="lbl">Доход всего</span><span class="v" id="tx-income-total" style="color:#2F8F6E">—</span></div>
-        <div><span class="lbl">Расход всего</span><span class="v" id="tx-expense-total" style="color:#D0603F">—</span></div>
+        <div><span class="lbl">Доход за всё время</span><span class="v" id="tx-income-total" style="color:#2F8F6E">—</span></div>
+        <div><span class="lbl">Расход за всё время</span><span class="v" id="tx-expense-total" style="color:#D0603F">—</span></div>
         <div><span class="lbl">Операций</span><span class="v" id="tx-count">0</span></div>
       </div>
       <div class="tx-totals" id="tx-income-breakdown"></div>
@@ -447,6 +485,8 @@ function recalc() {
   const income = parseFloat(document.getElementById('income-current').value) || 0;
   const pct = Math.min(100, (income / 500000) * 100);
   document.getElementById('income-bar').style.width = pct + '%';
+
+  if (window.__renderMonthStats) window.__renderMonthStats();
 }
 
 recalc();
@@ -653,6 +693,84 @@ document.getElementById('tx-body').addEventListener('click', (e) => {
 });
 
 renderTransactions();
+
+// ===== Статистика за месяц =====
+const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+function accAssetDelta(t) {
+  const m = accountMeta[t.accountKey];
+  if (!m || m.type !== 'asset') return 0;
+  return t.type === 'income' ? t.amount : -t.amount;
+}
+function accDebtDelta(t) {
+  const m = accountMeta[t.accountKey];
+  if (!m || m.type !== 'credit') return 0;
+  return t.type === 'expense' ? t.amount : -t.amount;
+}
+function sumCurrent(type) {
+  let s = 0;
+  Object.entries(accountMeta).forEach(([k, m]) => {
+    if (m.type === type) {
+      const el = document.querySelector(`[data-key="${k}"]`);
+      if (el) s += parseFloat(el.value) || 0;
+    }
+  });
+  return s;
+}
+function computeMonth(ym) {
+  const txs = state.transactions || [];
+  let income = 0, expense = 0, aIn = 0, dIn = 0, aFut = 0, dFut = 0;
+  txs.forEach(t => {
+    const tym = (t.date || '').slice(0, 7);
+    const ad = accAssetDelta(t), dd = accDebtDelta(t);
+    if (tym === ym) {
+      if (t.type === 'income') income += t.amount; else expense += t.amount;
+      aIn += ad; dIn += dd;
+    } else if (tym > ym) {
+      aFut += ad; dFut += dd;
+    }
+  });
+  const assetsNow = sumCurrent('asset'), debtsNow = sumCurrent('credit');
+  const assetsEnd = assetsNow - aFut, debtsEnd = debtsNow - dFut;
+  const assetsStart = assetsEnd - aIn;
+  return { income, expense, diff: income - expense, assetsStart, assetsEnd, debtsEnd, netEnd: assetsEnd - debtsEnd };
+}
+const _now = new Date();
+let curMonth = { y: _now.getFullYear(), m: _now.getMonth() + 1 };
+function curYm() { return curMonth.y + '-' + String(curMonth.m).padStart(2, '0'); }
+function isCurrentOrFuture() {
+  const n = new Date();
+  return curMonth.y > n.getFullYear() || (curMonth.y === n.getFullYear() && curMonth.m >= n.getMonth() + 1);
+}
+function renderMonthStats() {
+  if (!document.getElementById('month-stats')) return;
+  const s = computeMonth(curYm());
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('ms-label', MONTH_NAMES[curMonth.m - 1] + ' ' + curMonth.y);
+  set('ms-income', '+' + fmt(s.income));
+  set('ms-expense', '−' + fmt(s.expense));
+  const diffEl = document.getElementById('ms-diff');
+  if (diffEl) {
+    diffEl.textContent = (s.diff >= 0 ? '+' : '−') + fmt(Math.abs(s.diff));
+    diffEl.style.color = s.diff >= 0 ? '#2F8F6E' : '#D0603F';
+  }
+  set('ms-assets-start', fmt(s.assetsStart));
+  set('ms-assets-end', fmt(s.assetsEnd));
+  set('ms-debt-end', fmt(s.debtsEnd));
+  set('ms-net-end', fmt(s.netEnd));
+  const nextBtn = document.getElementById('ms-next');
+  if (nextBtn) nextBtn.disabled = isCurrentOrFuture();
+}
+document.getElementById('ms-prev').addEventListener('click', () => {
+  curMonth.m--; if (curMonth.m < 1) { curMonth.m = 12; curMonth.y--; }
+  renderMonthStats();
+});
+document.getElementById('ms-next').addEventListener('click', () => {
+  if (isCurrentOrFuture()) return;
+  curMonth.m++; if (curMonth.m > 12) { curMonth.m = 1; curMonth.y++; }
+  renderMonthStats();
+});
+window.__renderMonthStats = renderMonthStats;
+renderMonthStats();
 
 // ===== Нижняя навигация (вкладки) =====
 const NAV_KEY = 'anna-money-dashboard-tab';
