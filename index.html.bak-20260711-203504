@@ -293,8 +293,6 @@
   .title-cat, .hero-cat { display: none !important; }
   .cat-toast { display: none !important; }
   h2.screen-title { gap: 0 !important; }
-  /* атрибут hidden должен реально скрывать поля формы (перебивает .fld{display:flex}) */
-  .tx-form .fld[hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -769,36 +767,14 @@ txAccountSelect.appendChild(creditGroup);
 txAccountSelect.appendChild(assetGroup);
 
 // Списки для «Платёж по кредиту»: карта-источник (актив) и гасимый долг (кредит)
-// У рассрочек известен ежемесячный платёж — подставляем его автоматически.
-const DEBT_PAY_KEY = { mts1: 'mts1pay', mts2: 'mts2pay', tcs1: 'tcs1pay', tcs2: 'tcs2pay', tcs3: 'tcs3pay' };
-function debtMonthlyPay(debtKey) {
-  const pk = DEBT_PAY_KEY[debtKey];
-  if (!pk) return 0;
-  const el = document.querySelector(`[data-key="${pk}"]`);
-  return el ? (parseFloat(el.value) || 0) : 0;
-}
 const debtFromSel = document.getElementById('tx-debt-from');
 const debtTargetSel = document.getElementById('tx-debt-target');
 Object.entries(accountMeta).forEach(([key, meta]) => {
   const opt = document.createElement('option');
-  opt.value = key;
-  if (meta.type === 'asset') {
-    opt.textContent = meta.label;
-    debtFromSel.appendChild(opt);
-  } else {
-    const pay = debtMonthlyPay(key);
-    opt.textContent = meta.label + (pay ? ' · ' + fmt(pay) + '/мес' : ' · сумма вручную');
-    debtTargetSel.appendChild(opt);
-  }
+  opt.value = key; opt.textContent = meta.label;
+  if (meta.type === 'asset') debtFromSel.appendChild(opt);
+  else debtTargetSel.appendChild(opt);
 });
-// при выборе рассрочки — подставить её ежемесячный платёж (Сбер-кредитку не трогаем)
-function autofillDebtAmount() {
-  const pay = debtMonthlyPay(debtTargetSel.value);
-  const amtEl = document.getElementById('tx-amount');
-  if (pay) amtEl.value = Math.round(pay * 100) / 100;
-  else amtEl.value = '';
-}
-debtTargetSel.addEventListener('change', autofillDebtAmount);
 
 document.getElementById('tx-date').value = todayStr();
 
@@ -901,7 +877,6 @@ function syncIncomeCatVisibility() {
   // для платежа по кредиту: прячем обычный «Счёт» и категории, показываем два списка
   document.getElementById('tx-account-wrap').hidden = v === 'debtpay';
   document.getElementById('tx-debtpay-wrap').hidden = v !== 'debtpay';
-  if (v === 'debtpay') autofillDebtAmount();
 }
 txTypeSelect.addEventListener('change', syncIncomeCatVisibility);
 syncIncomeCatVisibility();
