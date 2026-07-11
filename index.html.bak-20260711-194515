@@ -458,7 +458,7 @@
 </div>
 
 <div class="screen" data-screen="tx" hidden>
-  <h2 class="screen-title"><img class="title-cat" id="cat-tx" alt="">Статистика</h2>
+  <h2 class="screen-title"><img class="title-cat" id="cat-tx" alt="">Операции</h2>
   <section>
     <div class="hint">Расход с кредитного счёта увеличивает долг. Расход с дебетового/накопительного счёта уменьшает его остаток. Доход, наоборот, увеличивает дебетовый остаток или гасит долг, если выбран кредитный счёт.</div>
 
@@ -472,7 +472,6 @@
         <div class="ms-tile in"><span class="lbl">Приход за месяц</span><span class="v" id="ms-income">—</span></div>
         <div class="ms-tile out"><span class="lbl">Расход за месяц</span><span class="v" id="ms-expense">—</span></div>
         <div class="ms-tile"><span class="lbl">Разница (приход − расход)</span><span class="v" id="ms-diff">—</span></div>
-        <div class="ms-tile"><span class="lbl">Платежи по кредитам</span><span class="v" id="ms-debtpay">—</span></div>
         <div class="ms-tile"><span class="lbl">Долг на конец месяца</span><span class="v" id="ms-debt-end">—</span></div>
         <div class="ms-tile"><span class="lbl">Остаток на счетах — начало</span><span class="v" id="ms-assets-start">—</span></div>
         <div class="ms-tile"><span class="lbl">Остаток на счетах — конец</span><span class="v" id="ms-assets-end">—</span></div>
@@ -501,7 +500,6 @@
           <select id="tx-type">
             <option value="expense">Расход</option>
             <option value="income">Доход</option>
-            <option value="debtpay">Платёж по кредиту/рассрочке</option>
           </select>
         </div>
         <div class="fld" id="tx-expense-cat-wrap"><label>Категория расхода</label>
@@ -526,14 +524,8 @@
             <option value="other">Другое</option>
           </select>
         </div>
-        <div class="fld" id="tx-account-wrap"><label>Счёт</label>
+        <div class="fld"><label>Счёт</label>
           <select id="tx-account"></select>
-        </div>
-        <div class="fld" id="tx-debtpay-wrap" hidden>
-          <label>С какой карты платишь</label>
-          <select id="tx-debt-from"></select>
-          <label style="margin-top:8px;">Какой долг гасишь</label>
-          <select id="tx-debt-target"></select>
         </div>
         <div class="fld"><label>Сумма</label><input type="number" id="tx-amount" step="0.01" min="0.01" required></div>
         <div class="fld"><label>Комментарий</label><input type="text" id="tx-comment" placeholder="например, продукты"></div>
@@ -557,7 +549,7 @@
   <button type="button" data-screen="overview" class="active"><span class="ic">🏠</span><span>Обзор</span></button>
   <button type="button" data-screen="assets"><span class="ic">💎</span><span>Активы</span></button>
   <button type="button" data-screen="debts"><span class="ic">💳</span><span>Долги</span></button>
-  <button type="button" data-screen="tx"><span class="ic">📊</span><span>Статистика</span></button>
+  <button type="button" data-screen="tx"><span class="ic">➕</span><span>Операции</span></button>
 </nav>
 
 <script>
@@ -765,31 +757,7 @@ Object.entries(accountMeta).forEach(([key, meta]) => {
 });
 txAccountSelect.appendChild(creditGroup);
 txAccountSelect.appendChild(assetGroup);
-
-// Списки для «Платёж по кредиту»: карта-источник (актив) и гасимый долг (кредит)
-const debtFromSel = document.getElementById('tx-debt-from');
-const debtTargetSel = document.getElementById('tx-debt-target');
-Object.entries(accountMeta).forEach(([key, meta]) => {
-  const opt = document.createElement('option');
-  opt.value = key; opt.textContent = meta.label;
-  if (meta.type === 'asset') debtFromSel.appendChild(opt);
-  else debtTargetSel.appendChild(opt);
-});
-
 document.getElementById('tx-date').value = todayStr();
-
-// Платёж по кредиту: деньги уходят с карты И долг уменьшается (два движения).
-// sign = 1 при добавлении, -1 при отмене/удалении.
-function applyDebtPay(fromKey, targetKey, amount, sign) {
-  [fromKey, targetKey].forEach(k => {
-    const input = document.querySelector(`[data-key="${k}"]`);
-    if (!input) return;
-    const current = parseFloat(input.value) || 0;
-    const newVal = current + (sign * -amount); // оба остатка уменьшаются
-    input.value = Math.round(newVal * 100) / 100;
-    state[k] = input.value;
-  });
-}
 
 state.transactions = state.transactions || [];
 
@@ -822,23 +790,16 @@ function renderTransactions() {
   if (txs.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#A79B86;padding:14px;">Операций пока нет — добавь первую выше</td></tr>';
   } else {
-    tbody.innerHTML = txs.map(t => {
-      const typeLabel = t.type === 'income'
-        ? 'Доход' + (t.category ? ' · ' + (incomeCategoryMeta[t.category] || t.category) : '')
-        : t.type === 'debtpay' ? 'Платёж по кредиту' : 'Расход';
-      const acct = t.type === 'debtpay'
-        ? (accountMeta[t.accountKey] ? accountMeta[t.accountKey].label : t.accountKey) + ' → ' + (accountMeta[t.targetKey] ? accountMeta[t.targetKey].label : t.targetKey)
-        : (accountMeta[t.accountKey] ? accountMeta[t.accountKey].label : t.accountKey);
-      return `
+    tbody.innerHTML = txs.map(t => `
       <tr>
         <td>${t.date}</td>
-        <td>${typeLabel}</td>
-        <td>${acct}</td>
+        <td>${t.type === 'income' ? 'Доход' + (t.category ? ' · ' + (incomeCategoryMeta[t.category] || t.category) : '') : 'Расход'}</td>
+        <td>${accountMeta[t.accountKey] ? accountMeta[t.accountKey].label : t.accountKey}</td>
         <td class="${t.type === 'income' ? 'amt-income' : 'amt-expense'}">${t.type === 'income' ? '+' : '−'}${fmt(t.amount)}</td>
         <td>${t.comment ? t.comment.replace(/</g,'&lt;') : ''}</td>
         <td><button type="button" class="tx-del" data-id="${t.id}" title="Удалить и отменить">✕</button></td>
-      </tr>`;
-    }).join('');
+      </tr>
+    `).join('');
   }
   let income = 0, expense = 0;
   const byCategory = {};
@@ -847,10 +808,9 @@ function renderTransactions() {
       income += t.amount;
       const cat = t.category || 'other';
       byCategory[cat] = (byCategory[cat] || 0) + t.amount;
-    } else if (t.type === 'expense') {
+    } else {
       expense += t.amount;
     }
-    // платежи по кредиту не входят ни в доход, ни в расход
   });
   document.getElementById('tx-income-total').textContent = fmt(income);
   document.getElementById('tx-expense-total').textContent = fmt(expense);
@@ -871,12 +831,8 @@ const txTypeSelect = document.getElementById('tx-type');
 const incomeCatWrap = document.getElementById('tx-income-cat-wrap');
 const expenseCatWrap = document.getElementById('tx-expense-cat-wrap');
 function syncIncomeCatVisibility() {
-  const v = txTypeSelect.value;
-  incomeCatWrap.hidden = v !== 'income';
-  expenseCatWrap.hidden = v !== 'expense';
-  // для платежа по кредиту: прячем обычный «Счёт» и категории, показываем два списка
-  document.getElementById('tx-account-wrap').hidden = v === 'debtpay';
-  document.getElementById('tx-debtpay-wrap').hidden = v !== 'debtpay';
+  incomeCatWrap.hidden = txTypeSelect.value !== 'income';
+  expenseCatWrap.hidden = txTypeSelect.value !== 'expense';
 }
 txTypeSelect.addEventListener('change', syncIncomeCatVisibility);
 syncIncomeCatVisibility();
@@ -932,27 +888,20 @@ document.getElementById('tx-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const date = document.getElementById('tx-date').value || todayStr();
   const type = document.getElementById('tx-type').value;
+  const accountKey = document.getElementById('tx-account').value;
   const amount = parseFloat(document.getElementById('tx-amount').value);
   const comment = document.getElementById('tx-comment').value.trim();
+  const category = type === 'income'
+    ? document.getElementById('tx-income-category').value
+    : document.getElementById('tx-expense-category').value;
   if (!amount || amount <= 0) return;
 
-  if (type === 'debtpay') {
-    const fromKey = document.getElementById('tx-debt-from').value;
-    const targetKey = document.getElementById('tx-debt-target').value;
-    applyDebtPay(fromKey, targetKey, amount, 1);
-    state.transactions.unshift({ id: Date.now(), date, type: 'debtpay', accountKey: fromKey, targetKey, amount, comment });
-  } else {
-    const accountKey = document.getElementById('tx-account').value;
-    const category = type === 'income'
-      ? document.getElementById('tx-income-category').value
-      : document.getElementById('tx-expense-category').value;
-    applyTxEffect(accountKey, type, amount, 1);
-    state.transactions.unshift({ id: Date.now(), date, type, accountKey, amount, comment, category });
-    showCatReaction(determineReaction(type, accountKey, category));
-  }
+  applyTxEffect(accountKey, type, amount, 1);
+  state.transactions.unshift({ id: Date.now(), date, type, accountKey, amount, comment, category });
   saveState(state);
   recalc();
   renderTransactions();
+  showCatReaction(determineReaction(type, accountKey, category));
 
   e.target.reset();
   document.getElementById('tx-date').value = todayStr();
@@ -963,7 +912,7 @@ document.getElementById('tx-form').addEventListener('submit', (e) => {
     cameFromQuickAdd = false;
     showScreen('overview');
     window.scrollTo(0, 0);
-    showSavedToast(type === 'income' ? 'Доход добавлен ✓' : type === 'debtpay' ? 'Платёж внесён ✓' : 'Расход добавлен ✓');
+    showSavedToast(type === 'income' ? 'Доход добавлен ✓' : 'Расход добавлен ✓');
   }
 });
 
@@ -987,11 +936,7 @@ document.getElementById('tx-body').addEventListener('click', (e) => {
   const id = Number(e.target.dataset.id);
   const tx = state.transactions.find(t => t.id === id);
   if (!tx) return;
-  if (tx.type === 'debtpay') {
-    applyDebtPay(tx.accountKey, tx.targetKey, tx.amount, -1);
-  } else {
-    applyTxEffect(tx.accountKey, tx.type, tx.amount, -1);
-  }
+  applyTxEffect(tx.accountKey, tx.type, tx.amount, -1);
   state.transactions = state.transactions.filter(t => t.id !== id);
   saveState(state);
   recalc();
@@ -1008,7 +953,6 @@ function accAssetDelta(t) {
   return t.type === 'income' ? t.amount : -t.amount;
 }
 function accDebtDelta(t) {
-  if (t.type === 'debtpay') return -t.amount; // платёж уменьшает долг (гасим targetKey)
   const m = accountMeta[t.accountKey];
   if (!m || m.type !== 'credit') return 0;
   return t.type === 'expense' ? t.amount : -t.amount;
@@ -1025,14 +969,12 @@ function sumCurrent(type) {
 }
 function computeMonth(ym) {
   const txs = state.transactions || [];
-  let income = 0, expense = 0, debtPay = 0, aIn = 0, dIn = 0, aFut = 0, dFut = 0;
+  let income = 0, expense = 0, aIn = 0, dIn = 0, aFut = 0, dFut = 0;
   txs.forEach(t => {
     const tym = (t.date || '').slice(0, 7);
     const ad = accAssetDelta(t), dd = accDebtDelta(t);
     if (tym === ym) {
-      if (t.type === 'income') income += t.amount;
-      else if (t.type === 'debtpay') debtPay += t.amount;
-      else expense += t.amount;
+      if (t.type === 'income') income += t.amount; else expense += t.amount;
       aIn += ad; dIn += dd;
     } else if (tym > ym) {
       aFut += ad; dFut += dd;
@@ -1041,7 +983,7 @@ function computeMonth(ym) {
   const assetsNow = sumCurrent('asset'), debtsNow = sumCurrent('credit');
   const assetsEnd = assetsNow - aFut, debtsEnd = debtsNow - dFut;
   const assetsStart = assetsEnd - aIn;
-  return { income, expense, debtPay, diff: income - expense, assetsStart, assetsEnd, debtsEnd, netEnd: assetsEnd - debtsEnd };
+  return { income, expense, diff: income - expense, assetsStart, assetsEnd, debtsEnd, netEnd: assetsEnd - debtsEnd };
 }
 const _now = new Date();
 let curMonth = { y: _now.getFullYear(), m: _now.getMonth() + 1 };
@@ -1062,7 +1004,6 @@ function renderMonthStats() {
     diffEl.textContent = (s.diff >= 0 ? '+' : '−') + fmt(Math.abs(s.diff));
     diffEl.style.color = s.diff >= 0 ? '#2F8F6E' : '#D0603F';
   }
-  set('ms-debtpay', fmt(s.debtPay));
   set('ms-assets-start', fmt(s.assetsStart));
   set('ms-assets-end', fmt(s.assetsEnd));
   set('ms-debt-end', fmt(s.debtsEnd));
