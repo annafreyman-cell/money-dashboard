@@ -228,11 +228,6 @@
   .today-label { color: rgba(255,255,255,.85) !important; }
   .today-sum { color: #fff !important; }
   .add-expense-btn { background: #fff !important; color: #6B3FA0 !important; box-shadow: 0 6px 16px rgba(0,0,0,.12) !important; }
-  .add-income-btn {
-    width: 100%; margin-top: 12px; padding: 16px; border: 2px solid rgba(255,255,255,.55); border-radius: 16px;
-    background: rgba(255,255,255,.14); color: #fff; font-size: 17px; font-weight: 800; cursor: pointer; font-family: inherit;
-  }
-  .add-income-btn:active { transform: translateY(1px); }
   .today-list .ti { border-bottom-color: rgba(255,255,255,.15) !important; }
   .today-list .ti .n { color: #F3EEF9 !important; }
   .today-list .ti .a { color: #FFD9A8 !important; }
@@ -320,7 +315,6 @@
     <div class="today-label">Расходы за сегодня</div>
     <div class="today-sum" id="todaySum">0 ₽</div>
     <button type="button" class="add-expense-btn" onclick="goAddExpense()">➕ Добавить расход</button>
-    <button type="button" class="add-income-btn" onclick="goAddIncome()">➕ Добавить доход</button>
     <div class="today-list" id="todayList"></div>
   </div>
 
@@ -431,17 +425,6 @@
   <section>
     <div class="grid">
       <div class="card">
-        <h4>Тинькофф — прочее</h4>
-        <div class="field"><label>Black карта</label><input type="number" class="asset-input" data-key="black" value="4678.20"></div>
-        <div class="field"><label>Копилка «ДР Кирилл»</label><input type="number" class="asset-input" data-key="kopilka" value="7002.55"></div>
-        <div class="field"><label>Накопительный счёт</label><input type="number" class="asset-input" data-key="nakop" value="0.61"></div>
-      </div>
-      <div class="card">
-        <h4>Сбербанк — дебетовая карта</h4>
-        <div class="field"><label>Счёт •• 5045</label><input type="number" class="asset-input" data-key="sberDebit" value="43.79"></div>
-        <span class="note-badge">Обычный расходный счёт, не путать с кредиткой Сбера в разделе «Долги»</span>
-      </div>
-      <div class="card">
         <h4>Точка (бизнес, ИП)</h4>
         <div class="field"><label>Депозит</label><input type="number" class="asset-input" data-key="tochka" value="181923.47"></div>
         <span class="note-badge">Неснимаемый до 23 июля</span>
@@ -452,6 +435,19 @@
         <div class="field"><label>Вклад 2</label><input type="number" class="asset-input" data-key="vklad2" value="50000"></div>
         <div class="field"><label>Вклад 3</label><input type="number" class="asset-input" data-key="vklad3" value="100000"></div>
         <div class="field"><label>Вклад 4</label><input type="number" class="asset-input" data-key="vklad4" value="100000"></div>
+        <span class="note-badge">Включает 49 500₽ пенсии — не доход от бизнеса, уже в остатке</span>
+      </div>
+      <div class="card">
+        <h4>Тинькофф — прочее</h4>
+        <div class="field"><label>Black карта</label><input type="number" class="asset-input" data-key="black" value="4678.20"></div>
+        <div class="field"><label>Копилка «ДР Кирилл»</label><input type="number" class="asset-input" data-key="kopilka" value="7002.55"></div>
+        <div class="field"><label>Накопительный счёт</label><input type="number" class="asset-input" data-key="nakop" value="0.61"></div>
+        <span class="note-badge">Детское пособие 3 600₽ — потрачено на подписки, в остатках уже не видно</span>
+      </div>
+      <div class="card">
+        <h4>Сбербанк — дебетовая карта</h4>
+        <div class="field"><label>Счёт •• 5045</label><input type="number" class="asset-input" data-key="sberDebit" value="43.79"></div>
+        <span class="note-badge">Обычный расходный счёт, не путать с кредиткой Сбера в разделе «Долги»</span>
       </div>
     </div>
   </section>
@@ -547,8 +543,8 @@
 
 <nav class="bottom-nav">
   <button type="button" data-screen="overview" class="active"><span class="ic">🏠</span><span>Обзор</span></button>
-  <button type="button" data-screen="assets"><span class="ic">💎</span><span>Активы</span></button>
   <button type="button" data-screen="debts"><span class="ic">💳</span><span>Долги</span></button>
+  <button type="button" data-screen="assets"><span class="ic">💎</span><span>Активы</span></button>
   <button type="button" data-screen="tx"><span class="ic">➕</span><span>Операции</span></button>
 </nav>
 
@@ -606,10 +602,7 @@ document.querySelectorAll('input[data-key]').forEach(input => {
 });
 
 function fmt(n) {
-  // явный пробел между разрядами (тысячи · сотни), чтобы цифры не слипались
-  const neg = n < 0 ? '−' : '';
-  const s = String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return neg + s + ' ₽';
+  return Math.round(n).toLocaleString('ru-RU') + ' ₽';
 }
 
 function recalc() {
@@ -702,19 +695,15 @@ function renderToday() {
       }).join('')
     : '<div class="empty">Сегодня расходов нет — и хорошо 🙂</div>';
 }
-let cameFromQuickAdd = false;
-function openAddForm(kind) {
-  cameFromQuickAdd = true;
+function goAddExpense() {
   showScreen('tx');
   const ts = document.getElementById('tx-type');
-  if (ts) { ts.value = kind; if (typeof syncIncomeCatVisibility === 'function') syncIncomeCatVisibility(); }
+  if (ts) { ts.value = 'expense'; if (typeof syncIncomeCatVisibility === 'function') syncIncomeCatVisibility(); }
   setTimeout(() => {
     const a = document.getElementById('tx-amount');
     if (a) { a.scrollIntoView({ block: 'center' }); a.focus(); }
   }, 60);
 }
-function goAddExpense() { openAddForm('expense'); }
-function goAddIncome() { openAddForm('income'); }
 window.__renderToday = renderToday;
 
 recalc();
@@ -906,30 +895,7 @@ document.getElementById('tx-form').addEventListener('submit', (e) => {
   e.target.reset();
   document.getElementById('tx-date').value = todayStr();
   syncIncomeCatVisibility();
-
-  // если пришли с главной по кнопке «Добавить …» — вернуться на главную
-  if (cameFromQuickAdd) {
-    cameFromQuickAdd = false;
-    showScreen('overview');
-    window.scrollTo(0, 0);
-    showSavedToast(type === 'income' ? 'Доход добавлен ✓' : 'Расход добавлен ✓');
-  }
 });
-
-function showSavedToast(msg) {
-  let t = document.getElementById('saved-toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'saved-toast';
-    t.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#2A2340;color:#fff;' +
-      'padding:12px 20px;border-radius:16px;font-size:15px;font-weight:700;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.25);';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = '1';
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .4s'; }, 2200);
-}
 
 document.getElementById('tx-body').addEventListener('click', (e) => {
   if (!e.target.classList.contains('tx-del')) return;
