@@ -203,11 +203,6 @@
   /* ===== Расходы за сегодня (главный блок) ===== */
   .today-card { background: #1C1B33; border-radius: 24px; padding: 22px; margin-bottom: 18px; box-shadow: 0 6px 22px rgba(28,27,51,0.14); }
   .today-label { color: #A9A6C4; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
-  .today-daybar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .today-daybar .today-label { margin-bottom: 0; text-align: center; flex: 1; }
-  .day-nav { width: 34px; height: 34px; border-radius: 11px; border: none; background: rgba(255,255,255,0.18); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; font-family: inherit; font-weight: 700; flex-shrink: 0; }
-  .day-nav:disabled { opacity: .35; cursor: default; }
-  .day-nav:active { transform: translateY(1px); }
   .today-sum { color: #FDFBF7; font-size: 38px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
   .add-expense-btn {
     width: 100%; margin-top: 18px; padding: 16px; border: none; border-radius: 16px;
@@ -324,11 +319,7 @@
   <h2 class="screen-title"><img class="title-cat" id="cat-overview" alt="">Обзор</h2>
 
   <div class="today-card">
-    <div class="today-daybar">
-      <button type="button" class="day-nav" id="dayPrev" aria-label="Предыдущий день">‹</button>
-      <div class="today-label" id="todayDayLabel">Расходы · Сегодня</div>
-      <button type="button" class="day-nav" id="dayNext" aria-label="Следующий день">›</button>
-    </div>
+    <div class="today-label">Расходы за сегодня</div>
     <div class="today-sum" id="todaySum">0 ₽</div>
     <button type="button" class="add-expense-btn" onclick="goAddExpense()">➕ Добавить расход</button>
     <button type="button" class="add-income-btn" onclick="goAddIncome()">➕ Добавить доход</button>
@@ -700,37 +691,15 @@ function renderDonut() {
 }
 window.__renderDonut = renderDonut;
 
-// ===== Расходы за день (главный экран) с переключателем дней =====
+// ===== Расходы за сегодня (главный экран) =====
 function todayStrLocal() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
-let dayOffset = 0; // 0 = сегодня, -1 = вчера, ...
-function selectedDate() {
-  const d = new Date();
-  d.setDate(d.getDate() + dayOffset);
-  return d;
-}
-function selectedDateStr() {
-  const d = selectedDate();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-}
-const DAY_MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-function dayTitle() {
-  const d = selectedDate();
-  const dm = d.getDate() + ' ' + DAY_MONTHS[d.getMonth()];
-  if (dayOffset === 0) return 'Расходы · Сегодня, ' + dm;
-  if (dayOffset === -1) return 'Расходы · Вчера, ' + dm;
-  return 'Расходы · ' + dm;
-}
 function renderToday() {
   const sumEl = document.getElementById('todaySum');
   if (!sumEl) return;
-  const t = selectedDateStr();
-  const lblEl = document.getElementById('todayDayLabel');
-  if (lblEl) lblEl.textContent = dayTitle();
-  const nextBtn = document.getElementById('dayNext');
-  if (nextBtn) nextBtn.disabled = dayOffset >= 0;
+  const t = todayStrLocal();
   const txs = (state.transactions || []).filter(x => x.type === 'expense' && (x.date || '') === t);
   const total = txs.reduce((a, x) => a + x.amount, 0);
   sumEl.textContent = fmt(total);
@@ -741,23 +710,14 @@ function renderToday() {
         const name = (x.comment && x.comment.trim()) ? x.comment : (EXPENSE_CAT_NAMES[x.category] || 'Расход');
         return `<div class="ti"><span class="n">${name.replace(/</g, '&lt;')}</span><span class="a">−${fmt(x.amount)}</span></div>`;
       }).join('')
-    : `<div class="empty">${dayOffset === 0 ? 'Сегодня расходов нет — и хорошо 🙂' : 'В этот день расходов нет'}</div>`;
+    : '<div class="empty">Сегодня расходов нет — и хорошо 🙂</div>';
 }
-(function () {
-  const prev = document.getElementById('dayPrev');
-  const next = document.getElementById('dayNext');
-  if (prev) prev.addEventListener('click', () => { dayOffset--; renderToday(); });
-  if (next) next.addEventListener('click', () => { if (dayOffset < 0) { dayOffset++; renderToday(); } });
-})();
 let cameFromQuickAdd = false;
 function openAddForm(kind) {
   cameFromQuickAdd = true;
   showScreen('tx');
   const ts = document.getElementById('tx-type');
   if (ts) { ts.value = kind; if (typeof syncIncomeCatVisibility === 'function') syncIncomeCatVisibility(); }
-  // если смотрим прошлый день — подставить его дату в форму (запишется на тот день)
-  const dateEl = document.getElementById('tx-date');
-  if (dateEl && dayOffset !== 0) dateEl.value = selectedDateStr();
   setTimeout(() => {
     const a = document.getElementById('tx-amount');
     if (a) { a.scrollIntoView({ block: 'center' }); a.focus(); }
