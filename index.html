@@ -199,6 +199,95 @@
   .trend-legend i.in { background: #2F8F6E; }
   .trend-legend i.out { background: #D0603F; }
   .trend-empty { font-size: 14px; color: #A79B86; padding: 8px 0; }
+
+  /* ===== Расходы за сегодня (главный блок) ===== */
+  .today-card { background: #1C1B33; border-radius: 24px; padding: 22px; margin-bottom: 18px; box-shadow: 0 6px 22px rgba(28,27,51,0.14); }
+  .today-label { color: #A9A6C4; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .today-sum { color: #FDFBF7; font-size: 38px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+  .add-expense-btn {
+    width: 100%; margin-top: 18px; padding: 16px; border: none; border-radius: 16px;
+    background: #FF8A50; color: #fff; font-size: 17px; font-weight: 800; cursor: pointer;
+    font-family: inherit; box-shadow: 0 4px 14px rgba(255,138,80,0.45);
+  }
+  .add-expense-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(255,138,80,0.45); }
+  .today-list { margin-top: 16px; }
+  .today-list .ti { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .today-list .ti:last-child { border-bottom: none; }
+  .today-list .ti .n { color: #EDEBF5; font-size: 15px; font-weight: 600; }
+  .today-list .ti .a { color: #FF9B6B; font-size: 15px; font-weight: 800; white-space: nowrap; padding-left: 12px; }
+  .today-list .empty { color: #8C89A8; font-size: 14px; padding: 8px 0; }
+
+  /* ===================================================================
+     СВЕТЛАЯ ТЕМА (вариант «светлый») — переопределяет тёмную палитру
+     =================================================================== */
+  body { background: #F3EEF9 !important; color: #2A2340 !important; }
+  .hero { background: linear-gradient(135deg,#6B3FA0,#8E63C9) !important; }
+
+  /* «Расходы за сегодня» — фиолетовый градиентный герой */
+  .today-card { background: linear-gradient(135deg,#6B3FA0,#8E63C9) !important; border-radius: 26px !important; box-shadow: 0 12px 30px rgba(107,63,160,.28) !important; }
+  .today-label { color: rgba(255,255,255,.85) !important; }
+  .today-sum { color: #fff !important; }
+  .add-expense-btn { background: #fff !important; color: #6B3FA0 !important; box-shadow: 0 6px 16px rgba(0,0,0,.12) !important; }
+  .today-list .ti { border-bottom-color: rgba(255,255,255,.15) !important; }
+  .today-list .ti .n { color: #F3EEF9 !important; }
+  .today-list .ti .a { color: #FFD9A8 !important; }
+  .today-list .empty { color: rgba(255,255,255,.72) !important; }
+
+  /* карточки — белые */
+  .card, .net-card, .tx-card, .income-card { background: #fff !important; border-radius: 22px !important; box-shadow: 0 6px 20px rgba(80,50,120,.08) !important; }
+  .net-card.net, .ms-tile.total { background: linear-gradient(135deg,#6B3FA0,#8E63C9) !important; }
+  .net-card.net h3, .ms-tile.total .lbl { color: rgba(255,255,255,.82) !important; }
+  .net-card.net .val, .ms-tile.total .v { color: #fff !important; }
+  .net-card.assets .val { color: #3E9E7A !important; }
+  .net-card.debts .val { color: #D96A6A !important; }
+  .net-card h3, .card h4, .eyebrow, .tx-totals div span.lbl { color: #8A82A0 !important; }
+  h2, h2.screen-title, .page-title { color: #2A2340 !important; }
+  section > .hint, .hint, .updated, .income-row .hint2 { color: #9990AC !important; }
+
+  /* поля ввода — светлые */
+  .field input, .tx-form select, .tx-form input, input[type=number], input[type=text] {
+    background: #F6F2FB !important; border: 1.5px solid #E7DFF3 !important; color: #2A2340 !important;
+  }
+  input:focus, .tx-form select:focus, .tx-form input:focus { border-color: #6B3FA0 !important; box-shadow: 0 0 0 3px rgba(107,63,160,.15) !important; }
+  .field label { color: #8A82A0 !important; }
+  .tx-form button, .btn { background: #6B3FA0 !important; }
+  .tx-form button:hover { background: #5A3488 !important; }
+  .note-badge { background: #F0E7FB !important; color: #6B3FA0 !important; }
+  .schedule .step { border-left-color: #8E63C9 !important; }
+  .schedule .step .amt { color: #2A2340 !important; }
+  .progress-fill, .bar-fill { background: linear-gradient(90deg,#8E63C9,#B98FE0) !important; }
+
+  /* статистика за месяц */
+  .ms-tile { background: #F6F2FB !important; }
+  .ms-tile .v { color: #2A2340 !important; }
+  .ms-tile.in .v { color: #3E9E7A !important; }
+  .ms-tile.out .v { color: #D96A6A !important; }
+  .ms-cats .row .cv { color: #D96A6A !important; }
+  .month-switch button { background: #EFE8F8 !important; color: #6B3FA0 !important; }
+  .month-switch .m-label { color: #2A2340 !important; }
+
+  /* нижняя навигация — светлая */
+  .bottom-nav { background: #fff !important; box-shadow: 0 -6px 24px rgba(80,50,120,.10) !important; }
+  .bottom-nav button { color: #8A82A0 !important; }
+  .bottom-nav button.active { color: #6B3FA0 !important; background: #F0E7FB !important; }
+
+  /* кольцевая диаграмма расходов */
+  .donut-wrap { display:flex; align-items:center; gap:16px; margin-top:6px; }
+  .donut { position:relative; width:140px; height:140px; flex-shrink:0; }
+  .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .donut-center .dc-l { font-size:10.5px; color:#8A82A0; font-weight:700; text-transform:uppercase; }
+  .donut-center .dc-v { font-size:18px; font-weight:800; color:#2A2340; letter-spacing:-.01em; }
+  .donut-legend { flex:1; display:flex; flex-direction:column; gap:9px; }
+  .donut-legend .lg { display:flex; align-items:center; gap:9px; font-size:13.5px; }
+  .donut-legend .lg .dot { width:11px; height:11px; border-radius:4px; flex-shrink:0; }
+  .donut-legend .lg .nm { color:#2A2340; font-weight:600; flex:1; }
+  .donut-legend .lg .vl { color:#8A82A0; font-weight:700; white-space:nowrap; }
+  .donut-title { font-size:12.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#8A82A0; margin-bottom:10px; }
+
+  /* убрать котиков (тёмные логотипы из прошлого дизайна) */
+  .title-cat, .hero-cat { display: none !important; }
+  .cat-toast { display: none !important; }
+  h2.screen-title { gap: 0 !important; }
 </style>
 </head>
 <body>
@@ -221,6 +310,28 @@
 
 <div class="screen" data-screen="overview">
   <h2 class="screen-title"><img class="title-cat" id="cat-overview" alt="">Обзор</h2>
+
+  <div class="today-card">
+    <div class="today-label">Расходы за сегодня</div>
+    <div class="today-sum" id="todaySum">0 ₽</div>
+    <button type="button" class="add-expense-btn" onclick="goAddExpense()">➕ Добавить расход</button>
+    <div class="today-list" id="todayList"></div>
+  </div>
+
+  <div class="card">
+    <div class="donut-title">Расходы за месяц</div>
+    <div class="donut-wrap">
+      <div class="donut">
+        <svg viewBox="0 0 42 42" width="140" height="140">
+          <circle cx="21" cy="21" r="15.915" fill="none" stroke="#EFEAF6" stroke-width="6"></circle>
+          <g id="donutSegs" transform="rotate(-90 21 21)" fill="none" stroke-width="6" stroke-linecap="round"></g>
+        </svg>
+        <div class="donut-center"><div class="dc-l">Всего</div><div class="dc-v" id="donutTotal">0 ₽</div></div>
+      </div>
+      <div class="donut-legend" id="donutLegend"></div>
+    </div>
+  </div>
+
   <div class="net-summary">
     <div class="net-card assets"><h3>Активы / накопления</h3><div class="val" id="sum-assets">—</div></div>
     <div class="net-card debts"><h3>Долги</h3><div class="val" id="sum-debts">—</div></div>
@@ -389,8 +500,15 @@
         </div>
         <div class="fld" id="tx-expense-cat-wrap"><label>Категория расхода</label>
           <select id="tx-expense-category">
+            <option value="food">Еда и продукты</option>
+            <option value="cafe">Кафе и рестораны</option>
+            <option value="transport">Транспорт</option>
             <option value="purchase">Покупки</option>
+            <option value="health">Здоровье</option>
+            <option value="beauty">Красота</option>
+            <option value="home">Дом и быт</option>
             <option value="subscription">Подписки/сайты</option>
+            <option value="other">Другое</option>
           </select>
         </div>
         <div class="fld" id="tx-income-cat-wrap" hidden><label>Источник дохода</label>
@@ -467,6 +585,12 @@ function saveState(state) {
 
 const state = loadState();
 
+const EXPENSE_CAT_NAMES = {
+  food: 'Еда и продукты', cafe: 'Кафе и рестораны', transport: 'Транспорт',
+  purchase: 'Покупки', health: 'Здоровье', beauty: 'Красота',
+  home: 'Дом и быт', subscription: 'Подписки/сайты', other: 'Другое'
+};
+
 document.querySelectorAll('input[data-key]').forEach(input => {
   const key = input.dataset.key;
   if (state[key] !== undefined) input.value = state[key];
@@ -507,7 +631,80 @@ function recalc() {
   document.getElementById('income-bar').style.width = pct + '%';
 
   if (window.__renderMonthStats) window.__renderMonthStats();
+  if (window.__renderToday) window.__renderToday();
+  if (window.__renderDonut) window.__renderDonut();
 }
+
+// ===== Кольцевая диаграмма расходов за месяц =====
+const CAT_COLORS = {
+  food: '#8E63C9', cafe: '#E9C84A', transport: '#4E7A9E', purchase: '#DB8FBE',
+  health: '#5FB6A8', beauty: '#E8896B', home: '#6FB1D6', subscription: '#B98FE0', other: '#B0A8C0'
+};
+function renderDonut() {
+  const segs = document.getElementById('donutSegs');
+  if (!segs) return;
+  const ym = todayStrLocal().slice(0, 7);
+  const by = {};
+  (state.transactions || []).forEach(t => {
+    if (t.type === 'expense' && (t.date || '').slice(0, 7) === ym) {
+      const c = t.category || 'other';
+      by[c] = (by[c] || 0) + t.amount;
+    }
+  });
+  const entries = Object.entries(by).sort((a, b) => b[1] - a[1]);
+  const total = entries.reduce((a, e) => a + e[1], 0);
+  document.getElementById('donutTotal').textContent = fmt(total);
+  segs.innerHTML = '';
+  let off = 0;
+  entries.forEach(([c, v]) => {
+    const pct = total ? v / total * 100 : 0;
+    const seg = Math.max(0, pct - 1.5);
+    const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circ.setAttribute('cx', '21'); circ.setAttribute('cy', '21'); circ.setAttribute('r', '15.915');
+    circ.setAttribute('stroke', CAT_COLORS[c] || '#B0A8C0');
+    circ.setAttribute('stroke-dasharray', `${seg.toFixed(2)} ${(100 - seg).toFixed(2)}`);
+    circ.setAttribute('stroke-dashoffset', (-off).toFixed(2));
+    segs.appendChild(circ);
+    off += pct;
+  });
+  const leg = document.getElementById('donutLegend');
+  leg.innerHTML = entries.length
+    ? entries.map(([c, v]) => `<div class="lg"><span class="dot" style="background:${CAT_COLORS[c] || '#B0A8C0'}"></span><span class="nm">${EXPENSE_CAT_NAMES[c] || c}</span><span class="vl">${fmt(v)}</span></div>`).join('')
+    : '<div style="color:#8A82A0;font-size:13px;">Расходов в этом месяце пока нет</div>';
+}
+window.__renderDonut = renderDonut;
+
+// ===== Расходы за сегодня (главный экран) =====
+function todayStrLocal() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function renderToday() {
+  const sumEl = document.getElementById('todaySum');
+  if (!sumEl) return;
+  const t = todayStrLocal();
+  const txs = (state.transactions || []).filter(x => x.type === 'expense' && (x.date || '') === t);
+  const total = txs.reduce((a, x) => a + x.amount, 0);
+  sumEl.textContent = fmt(total);
+  const list = document.getElementById('todayList');
+  if (!list) return;
+  list.innerHTML = txs.length
+    ? txs.map(x => {
+        const name = (x.comment && x.comment.trim()) ? x.comment : (EXPENSE_CAT_NAMES[x.category] || 'Расход');
+        return `<div class="ti"><span class="n">${name.replace(/</g, '&lt;')}</span><span class="a">−${fmt(x.amount)}</span></div>`;
+      }).join('')
+    : '<div class="empty">Сегодня расходов нет — и хорошо 🙂</div>';
+}
+function goAddExpense() {
+  showScreen('tx');
+  const ts = document.getElementById('tx-type');
+  if (ts) { ts.value = 'expense'; if (typeof syncIncomeCatVisibility === 'function') syncIncomeCatVisibility(); }
+  setTimeout(() => {
+    const a = document.getElementById('tx-amount');
+    if (a) { a.scrollIntoView({ block: 'center' }); a.focus(); }
+  }, 60);
+}
+window.__renderToday = renderToday;
 
 recalc();
 document.getElementById('updated-at').textContent = 'Данные редактируются локально, сохраняются в этом браузере';
@@ -783,7 +980,6 @@ function renderMonthStats() {
   renderTrend();
 }
 
-const EXPENSE_CAT_NAMES = { purchase: 'Покупки', subscription: 'Подписки/сайты' };
 function renderExpenseCats(ym) {
   const el = document.getElementById('ms-expense-cats');
   if (!el) return;
@@ -860,6 +1056,8 @@ function showScreen(name) {
 }
 navButtons.forEach(b => b.addEventListener('click', () => showScreen(b.dataset.screen)));
 showScreen(localStorage.getItem(NAV_KEY) || 'overview');
+renderToday();
+renderDonut();
 
 // ===== Код-замок (4 цифры) =====
 (function() {
