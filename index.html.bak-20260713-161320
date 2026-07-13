@@ -253,7 +253,6 @@
   .today-list .ti { border-bottom-color: rgba(255,255,255,.15) !important; }
   .today-list .ti .n { color: #F3EEF9 !important; }
   .today-list .ti .a { color: #FFD9A8 !important; }
-  .today-list .ti .a.in { color: #9CEFC0 !important; }
   .today-list .empty { color: rgba(255,255,255,.72) !important; }
 
   /* карточки — белые */
@@ -745,30 +744,17 @@ function renderToday() {
   if (lblEl) lblEl.textContent = dayTitle();
   const nextBtn = document.getElementById('dayNext');
   if (nextBtn) nextBtn.disabled = dayOffset >= 0;
-  // все операции дня: расходы, доходы и платежи по кредиту
-  const dayTx = (state.transactions || []).filter(x => (x.date || '') === t &&
-    (x.type === 'expense' || x.type === 'income' || x.type === 'debtpay'));
-  // большая цифра — сумма РАСХОДОВ за день (заголовок «Расходы»)
-  const expenseTotal = dayTx.filter(x => x.type === 'expense').reduce((a, x) => a + x.amount, 0);
-  sumEl.textContent = fmt(expenseTotal);
+  const txs = (state.transactions || []).filter(x => x.type === 'expense' && (x.date || '') === t);
+  const total = txs.reduce((a, x) => a + x.amount, 0);
+  sumEl.textContent = fmt(total);
   const list = document.getElementById('todayList');
   if (!list) return;
-  list.innerHTML = dayTx.length
-    ? dayTx.map(x => {
-        let name, sign, cls;
-        if (x.type === 'income') {
-          name = (x.comment && x.comment.trim()) ? x.comment : ((typeof incomeCategoryMeta !== 'undefined' && incomeCategoryMeta[x.category]) || 'Доход');
-          sign = '+'; cls = 'in';
-        } else if (x.type === 'debtpay') {
-          name = (x.comment && x.comment.trim()) ? x.comment : 'Платёж по кредиту';
-          sign = '−'; cls = '';
-        } else {
-          name = (x.comment && x.comment.trim()) ? x.comment : (EXPENSE_CAT_NAMES[x.category] || 'Расход');
-          sign = '−'; cls = '';
-        }
-        return `<div class="ti"><span class="n">${name.replace(/</g, '&lt;')}</span><span class="a ${cls}">${sign}${fmt(x.amount)}</span></div>`;
+  list.innerHTML = txs.length
+    ? txs.map(x => {
+        const name = (x.comment && x.comment.trim()) ? x.comment : (EXPENSE_CAT_NAMES[x.category] || 'Расход');
+        return `<div class="ti"><span class="n">${name.replace(/</g, '&lt;')}</span><span class="a">−${fmt(x.amount)}</span></div>`;
       }).join('')
-    : `<div class="empty">${dayOffset === 0 ? 'Сегодня операций нет' : 'В этот день операций нет'}</div>`;
+    : `<div class="empty">${dayOffset === 0 ? 'Сегодня расходов нет — и хорошо 🙂' : 'В этот день расходов нет'}</div>`;
 }
 (function () {
   const prev = document.getElementById('dayPrev');
