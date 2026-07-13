@@ -133,38 +133,26 @@
   .bottom-nav button.active { color: #FDFBF7; background: rgba(255,138,80,0.22); }
 
   .pin-lock {
-    position: fixed; inset: 0; z-index: 200;
-    background: linear-gradient(180deg, #1E8A86 0%, #4FB39A 46%, #C6E7D2 100%);
-    display: flex; flex-direction: column; text-align: left;
-    padding: calc(52px + env(safe-area-inset-top)) 26px calc(30px + env(safe-area-inset-bottom));
-    max-width: 480px; margin: 0 auto;
+    position: fixed; inset: 0; background: #1C1B33; z-index: 200;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; text-align: center;
   }
-  .pin-icon {
-    width: 54px; height: 54px; border-radius: 16px; background: rgba(255,255,255,0.22);
-    display: flex; align-items: center; justify-content: center; font-size: 27px; margin-bottom: 24px;
-  }
-  .pin-greet { color: #fff; font-size: 34px; font-weight: 800; line-height: 1.12; letter-spacing: -0.01em; }
-  .pin-hint { color: rgba(255,255,255,0.9); font-size: 15px; font-weight: 500; margin-top: 20px; }
-  .pin-dots { display: flex; gap: 10px; margin-top: 14px; }
+  .pin-lock h2 { color: #FDFBF7; font-size: 18px; margin: 0 0 6px 0; }
+  .pin-lock p { color: #A9A6C4; font-size: 12.5px; margin: 0 0 22px 0; max-width: 260px; }
+  .pin-dots { display: flex; gap: 14px; margin-bottom: 24px; }
   .pin-dots span {
-    flex: 1; max-width: 64px; height: 46px; border-radius: 12px;
-    background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid #A9A6C4; background: transparent;
   }
-  .pin-dots span.filled::after { content: '•'; color: #fff; font-size: 32px; line-height: 1; }
-  .pin-error { color: #FFE1E1; font-size: 13px; font-weight: 600; margin-top: 12px; min-height: 16px; }
-  .pin-keypad { margin-top: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .pin-dots span.filled { background: #FF8A50; border-color: #FF8A50; }
+  .pin-keypad { display: grid; grid-template-columns: repeat(3, 64px); gap: 14px; margin-bottom: 18px; }
   .pin-keypad button {
-    height: 60px; border-radius: 16px; border: none; background: rgba(255,255,255,0.92);
-    cursor: pointer; font-family: inherit; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; line-height: 1;
+    width: 64px; height: 64px; border-radius: 50%; border: none; background: rgba(255,255,255,0.08);
+    color: #FDFBF7; font-size: 20px; font-weight: 700; cursor: pointer; font-family: inherit;
   }
-  .pin-keypad button .num { font-size: 24px; font-weight: 700; color: #17403A; }
-  .pin-keypad button .let { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: #5E837A; margin-top: 3px; }
-  .pin-keypad button:active { transform: scale(0.96); }
-  .pin-keypad button.plain { background: transparent; }
-  .pin-keypad button.plain .num { color: #fff; font-size: 15px; font-weight: 600; }
-  .pin-keypad button.plain .num.big { font-size: 26px; }
-  .pin-reset { display: none; }
+  .pin-keypad button:active { background: rgba(255,138,80,0.35); }
+  .pin-keypad button.wide { font-size: 12px; font-weight: 600; }
+  .pin-error { color: #FF8A8A; font-size: 12.5px; margin-bottom: 10px; min-height: 16px; }
+  .pin-reset { color: #A9A6C4; font-size: 11.5px; text-decoration: underline; background: none; border: none; cursor: pointer; margin-top: 6px; font-family: inherit; }
 
   .cat-toast {
     position: fixed; left: 50%; transform: translateX(-50%) translateY(0);
@@ -317,13 +305,12 @@
 <body>
 
 <div class="pin-lock" id="pin-lock">
-  <div class="pin-icon">💰</div>
-  <div class="pin-greet" id="pin-title">Добрый день, Анна</div>
-  <div class="pin-hint" id="pin-subtitle">Введите пароль</div>
+  <h2 id="pin-title">Введи код</h2>
+  <p id="pin-subtitle">4 цифры, чтобы открыть «Деньги»</p>
   <div class="pin-dots" id="pin-dots"></div>
   <div class="pin-error" id="pin-error"></div>
   <div class="pin-keypad" id="pin-keypad"></div>
-  <button type="button" class="pin-reset" id="pin-reset">Не могу войти</button>
+  <button type="button" class="pin-reset" id="pin-reset">Забыла код — сбросить</button>
 </div>
 
 <div class="cat-toast" id="cat-toast" hidden>
@@ -1254,40 +1241,32 @@ renderDonut();
     }
   }
 
-  const _h = new Date().getHours();
-  const greetText = (_h < 6 ? 'Доброй ночи' : _h < 12 ? 'Доброе утро' : _h < 18 ? 'Добрый день' : 'Добрый вечер') + ', Анна';
-
   function renderMode() {
     entered = '';
     errorEl.textContent = '';
     renderDots();
-    titleEl.textContent = greetText;
     if (mode === 'create') {
-      subtitleEl.textContent = 'Придумайте пароль — 4 цифры';
+      titleEl.textContent = 'Придумай код';
+      subtitleEl.textContent = '4 цифры, чтобы защитить «Деньги» на этом устройстве';
     } else if (mode === 'confirm') {
-      subtitleEl.textContent = 'Повторите пароль';
+      titleEl.textContent = 'Повтори код';
+      subtitleEl.textContent = 'Ещё раз, чтобы не ошибиться';
     } else {
-      subtitleEl.textContent = 'Введите пароль';
+      titleEl.textContent = 'Введи код';
+      subtitleEl.textContent = '4 цифры, чтобы открыть «Деньги»';
     }
   }
 
   function buildKeypad() {
     keypadEl.innerHTML = '';
-    const LET = { '2':'а б в г','3':'д е ж з','4':'и й к л','5':'м н о п','6':'р с т у','7':'ф х ц ч','8':'ш щ ъ ы','9':'ь э ю я' };
-    const keys = ['1','2','3','4','5','6','7','8','9','cant','0','back'];
+    const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
     keys.forEach(k => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      if (k === 'cant') {
-        btn.className = 'plain';
-        btn.innerHTML = '<span class="num">Не могу войти</span>';
-        btn.addEventListener('click', doReset);
-      } else if (k === 'back') {
-        btn.className = 'plain';
-        btn.innerHTML = '<span class="num big">⌫</span>';
-        btn.addEventListener('click', () => handleKey('⌫'));
-      } else {
-        btn.innerHTML = '<span class="num">' + k + '</span>' + (LET[k] ? '<span class="let">' + LET[k] + '</span>' : '');
+      if (k === '') { btn.style.visibility = 'hidden'; }
+      else {
+        btn.textContent = k;
+        if (k === '⌫') btn.classList.add('wide');
         btn.addEventListener('click', () => handleKey(k));
       }
       keypadEl.appendChild(btn);
@@ -1338,14 +1317,13 @@ renderDonut();
     lockEl.style.display = 'none';
   }
 
-  function doReset() {
-    if (confirm('Сбросить пароль? Придётся придумать новый.')) {
+  resetEl.addEventListener('click', () => {
+    if (confirm('Сбросить код? Придётся придумать новый.')) {
       localStorage.removeItem(PIN_KEY);
       mode = 'create';
       renderMode();
     }
-  }
-  resetEl.addEventListener('click', doReset);
+  });
 
   buildKeypad();
   renderMode();
