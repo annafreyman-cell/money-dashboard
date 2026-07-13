@@ -221,11 +221,6 @@
   .day-nav:disabled { opacity: .35; cursor: default; }
   .day-nav:active { transform: translateY(1px); }
   .today-sum { color: #FDFBF7; font-size: 38px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
-  .today-stats { display: flex; gap: 6px; margin: 2px 0 2px; }
-  .today-stats .ts { flex: 1; min-width: 0; }
-  .today-stats .ts .l { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: rgba(255,255,255,0.72); margin-bottom: 3px; }
-  .today-stats .ts .v { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: #fff; white-space: nowrap; }
-  .today-stats .ts .v.in { color: #9CEFC0; }
   .add-expense-btn {
     width: 100%; margin-top: 18px; padding: 16px; border: none; border-radius: 16px;
     background: #FF8A50; color: #fff; font-size: 17px; font-weight: 800; cursor: pointer;
@@ -237,8 +232,6 @@
   .today-list .ti:last-child { border-bottom: none; }
   .today-list .ti .n { color: #EDEBF5; font-size: 15px; font-weight: 600; }
   .today-list .ti .a { color: #FF9B6B; font-size: 15px; font-weight: 800; white-space: nowrap; padding-left: 12px; }
-  .today-list .ti-del { flex-shrink: 0; margin-left: 10px; width: 26px; height: 26px; border-radius: 8px; border: none; background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.8); font-size: 12px; cursor: pointer; font-family: inherit; }
-  .today-list .ti-del:active { background: rgba(255,255,255,0.32); }
   .today-list .empty { color: #8C89A8; font-size: 14px; padding: 8px 0; }
 
   /* ===================================================================
@@ -350,11 +343,7 @@
       <div class="today-label" id="todayDayLabel">Расходы · Сегодня</div>
       <button type="button" class="day-nav" id="dayNext" aria-label="Следующий день">›</button>
     </div>
-    <div class="today-stats">
-      <div class="ts"><span class="l">Расходы</span><span class="v" id="todayExpense">0 ₽</span></div>
-      <div class="ts"><span class="l">Доходы</span><span class="v in" id="todayIncome">0 ₽</span></div>
-      <div class="ts"><span class="l">Остаток</span><span class="v" id="todayNet">0 ₽</span></div>
-    </div>
+    <div class="today-sum" id="todaySum">0 ₽</div>
     <button type="button" class="add-expense-btn" onclick="goAddExpense()">➕ Добавить расход</button>
     <button type="button" class="add-income-btn" onclick="goAddIncome()">➕ Добавить доход</button>
     <div class="today-list" id="todayList"></div>
@@ -371,20 +360,6 @@
         <div class="donut-center"><div class="dc-l">Всего</div><div class="dc-v" id="donutTotal">0 ₽</div></div>
       </div>
       <div class="donut-legend" id="donutLegend"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="donut-title">Доходы за месяц</div>
-    <div class="donut-wrap">
-      <div class="donut">
-        <svg viewBox="0 0 42 42" width="140" height="140">
-          <circle cx="21" cy="21" r="15.915" fill="none" stroke="#EAF4EE" stroke-width="6"></circle>
-          <g id="incDonutSegs" transform="rotate(-90 21 21)" fill="none" stroke-width="6" stroke-linecap="round"></g>
-        </svg>
-        <div class="donut-center"><div class="dc-l">Всего</div><div class="dc-v" id="incDonutTotal">0 ₽</div></div>
-      </div>
-      <div class="donut-legend" id="incDonutLegend"></div>
     </div>
   </div>
 
@@ -652,13 +627,6 @@ const EXPENSE_CAT_NAMES = {
   purchase: 'Покупки', health: 'Здоровье', beauty: 'Красота',
   home: 'Дом и быт', subscription: 'Подписки/сайты', other: 'Другое'
 };
-const incomeCategoryMeta = {
-  earn: 'Заработок',
-  pension: 'Пенсия',
-  benefit: 'Пособие',
-  gift: 'От близких',
-  other: 'Другое',
-};
 
 document.querySelectorAll('input[data-key]').forEach(input => {
   const key = input.dataset.key;
@@ -705,7 +673,6 @@ function recalc() {
   if (window.__renderMonthStats) window.__renderMonthStats();
   if (window.__renderToday) window.__renderToday();
   if (window.__renderDonut) window.__renderDonut();
-  if (window.__renderIncomeDonut) window.__renderIncomeDonut();
 }
 
 // ===== Кольцевая диаграмма расходов за месяц =====
@@ -747,44 +714,6 @@ function renderDonut() {
 }
 window.__renderDonut = renderDonut;
 
-// ===== Кольцевая диаграмма доходов за месяц =====
-const INCOME_COLORS = {
-  earn: '#3E9E7A', pension: '#4E7A9E', benefit: '#E9C84A', gift: '#DB8FBE', other: '#B0A8C0'
-};
-function renderIncomeDonut() {
-  const segs = document.getElementById('incDonutSegs');
-  if (!segs) return;
-  const ym = todayStrLocal().slice(0, 7);
-  const by = {};
-  (state.transactions || []).forEach(t => {
-    if (t.type === 'income' && (t.date || '').slice(0, 7) === ym) {
-      const c = t.category || 'other';
-      by[c] = (by[c] || 0) + t.amount;
-    }
-  });
-  const entries = Object.entries(by).sort((a, b) => b[1] - a[1]);
-  const total = entries.reduce((a, e) => a + e[1], 0);
-  document.getElementById('incDonutTotal').textContent = fmt(total);
-  segs.innerHTML = '';
-  let off = 0;
-  entries.forEach(([c, v]) => {
-    const pct = total ? v / total * 100 : 0;
-    const seg = Math.max(0, pct - 1.5);
-    const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circ.setAttribute('cx', '21'); circ.setAttribute('cy', '21'); circ.setAttribute('r', '15.915');
-    circ.setAttribute('stroke', INCOME_COLORS[c] || '#B0A8C0');
-    circ.setAttribute('stroke-dasharray', `${seg.toFixed(2)} ${(100 - seg).toFixed(2)}`);
-    circ.setAttribute('stroke-dashoffset', (-off).toFixed(2));
-    segs.appendChild(circ);
-    off += pct;
-  });
-  const leg = document.getElementById('incDonutLegend');
-  leg.innerHTML = entries.length
-    ? entries.map(([c, v]) => `<div class="lg"><span class="dot" style="background:${INCOME_COLORS[c] || '#B0A8C0'}"></span><span class="nm">${(typeof incomeCategoryMeta !== 'undefined' && incomeCategoryMeta[c]) || c}</span><span class="vl">${fmt(v)}</span></div>`).join('')
-    : '<div style="color:#8A82A0;font-size:13px;">Доходов в этом месяце пока нет</div>';
-}
-window.__renderIncomeDonut = renderIncomeDonut;
-
 // ===== Расходы за день (главный экран) с переключателем дней =====
 function todayStrLocal() {
   const d = new Date();
@@ -804,12 +733,13 @@ const DAY_MONTHS = ['января','февраля','марта','апреля',
 function dayTitle() {
   const d = selectedDate();
   const dm = d.getDate() + ' ' + DAY_MONTHS[d.getMonth()];
-  if (dayOffset === 0) return 'Сегодня, ' + dm;
-  if (dayOffset === -1) return 'Вчера, ' + dm;
-  return dm;
+  if (dayOffset === 0) return 'Расходы · Сегодня, ' + dm;
+  if (dayOffset === -1) return 'Расходы · Вчера, ' + dm;
+  return 'Расходы · ' + dm;
 }
 function renderToday() {
-  if (!document.getElementById('todayExpense')) return;
+  const sumEl = document.getElementById('todaySum');
+  if (!sumEl) return;
   const t = selectedDateStr();
   const lblEl = document.getElementById('todayDayLabel');
   if (lblEl) lblEl.textContent = dayTitle();
@@ -818,14 +748,9 @@ function renderToday() {
   // все операции дня: расходы, доходы и платежи по кредиту
   const dayTx = (state.transactions || []).filter(x => (x.date || '') === t &&
     (x.type === 'expense' || x.type === 'income' || x.type === 'debtpay'));
+  // большая цифра — сумма РАСХОДОВ за день (заголовок «Расходы»)
   const expenseTotal = dayTx.filter(x => x.type === 'expense').reduce((a, x) => a + x.amount, 0);
-  const incomeTotal = dayTx.filter(x => x.type === 'income').reduce((a, x) => a + x.amount, 0);
-  const net = incomeTotal - expenseTotal;
-  document.getElementById('todayExpense').textContent = fmt(expenseTotal);
-  document.getElementById('todayIncome').textContent = incomeTotal ? '+' + fmt(incomeTotal) : fmt(0);
-  const netEl = document.getElementById('todayNet');
-  netEl.textContent = (net >= 0 ? '+' : '−') + fmt(Math.abs(net));
-  netEl.classList.toggle('in', net >= 0);
+  sumEl.textContent = fmt(expenseTotal);
   const list = document.getElementById('todayList');
   if (!list) return;
   list.innerHTML = dayTx.length
@@ -841,7 +766,7 @@ function renderToday() {
           name = (x.comment && x.comment.trim()) ? x.comment : (EXPENSE_CAT_NAMES[x.category] || 'Расход');
           sign = '−'; cls = '';
         }
-        return `<div class="ti"><span class="n">${name.replace(/</g, '&lt;')}</span><span class="a ${cls}">${sign}${fmt(x.amount)}</span><button type="button" class="ti-del" data-id="${x.id}" title="Удалить">✕</button></div>`;
+        return `<div class="ti"><span class="n">${name.replace(/</g, '&lt;')}</span><span class="a ${cls}">${sign}${fmt(x.amount)}</span></div>`;
       }).join('')
     : `<div class="empty">${dayOffset === 0 ? 'Сегодня операций нет' : 'В этот день операций нет'}</div>`;
 }
@@ -974,7 +899,13 @@ function applyTxEffect(accountKey, type, amount, sign) {
   state[accountKey] = input.value;
 }
 
-// incomeCategoryMeta перенесён выше (к EXPENSE_CAT_NAMES) — чтобы избежать TDZ
+const incomeCategoryMeta = {
+  earn: 'Заработок',
+  pension: 'Пенсия',
+  benefit: 'Пособие',
+  gift: 'От близких',
+  other: 'Другое',
+};
 
 function renderTransactions() {
   const tbody = document.getElementById('tx-body');
@@ -1143,7 +1074,9 @@ function showSavedToast(msg) {
   window.__toastTimer = setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .4s'; }, 2200);
 }
 
-function deleteTx(id) {
+document.getElementById('tx-body').addEventListener('click', (e) => {
+  if (!e.target.classList.contains('tx-del')) return;
+  const id = Number(e.target.dataset.id);
   const tx = state.transactions.find(t => t.id === id);
   if (!tx) return;
   if (tx.type === 'debtpay') {
@@ -1155,20 +1088,6 @@ function deleteTx(id) {
   saveState(state);
   recalc();
   renderTransactions();
-}
-
-document.getElementById('tx-body').addEventListener('click', (e) => {
-  if (!e.target.classList.contains('tx-del')) return;
-  const id = Number(e.target.dataset.id);
-  if (confirm('Удалить эту операцию? Остатки вернутся как было.')) deleteTx(id);
-});
-
-// удаление прямо из списка операций дня на «Обзоре»
-document.getElementById('todayList').addEventListener('click', (e) => {
-  const btn = e.target.closest('.ti-del');
-  if (!btn) return;
-  const id = Number(btn.dataset.id);
-  if (confirm('Удалить эту операцию? Остатки вернутся как было.')) deleteTx(id);
 });
 
 renderTransactions();
