@@ -552,6 +552,7 @@
             <option value="expense">Расход</option>
             <option value="income">Доход</option>
             <option value="debtpay">Платёж по кредиту/рассрочке</option>
+            <option value="transfer">Перевод между счетами</option>
           </select>
         </div>
         <div class="fld" id="tx-expense-cat-wrap"><label>Категория расхода</label>
@@ -584,6 +585,12 @@
           <select id="tx-debt-from"></select>
           <label style="margin-top:8px;">Какой долг гасишь</label>
           <select id="tx-debt-target"></select>
+        </div>
+        <div class="fld" id="tx-transfer-wrap" hidden>
+          <label>Откуда (списать)</label>
+          <select id="tx-transfer-from"></select>
+          <label style="margin-top:8px;">Куда (зачислить)</label>
+          <select id="tx-transfer-to"></select>
         </div>
         <div class="fld"><label>Сумма</label><input type="number" id="tx-amount" step="0.01" min="0.01" required></div>
         <div class="fld"><label>Комментарий</label><input type="text" id="tx-comment" placeholder="например, продукты"></div>
@@ -817,7 +824,7 @@ function renderToday() {
   if (nextBtn) nextBtn.disabled = dayOffset >= 0;
   // все операции дня: расходы, доходы и платежи по кредиту
   const dayTx = (state.transactions || []).filter(x => (x.date || '') === t &&
-    (x.type === 'expense' || x.type === 'income' || x.type === 'debtpay'));
+    (x.type === 'expense' || x.type === 'income' || x.type === 'debtpay' || x.type === 'transfer'));
   const expenseTotal = dayTx.filter(x => x.type === 'expense').reduce((a, x) => a + x.amount, 0);
   const incomeTotal = dayTx.filter(x => x.type === 'income').reduce((a, x) => a + x.amount, 0);
   const net = incomeTotal - expenseTotal;
@@ -837,6 +844,11 @@ function renderToday() {
         } else if (x.type === 'debtpay') {
           name = (x.comment && x.comment.trim()) ? x.comment : 'Платёж по кредиту';
           sign = '−'; cls = '';
+        } else if (x.type === 'transfer') {
+          const fl = accountMeta[x.accountKey] ? accountMeta[x.accountKey].label : x.accountKey;
+          const tl = accountMeta[x.targetKey] ? accountMeta[x.targetKey].label : x.targetKey;
+          name = (x.comment && x.comment.trim()) ? x.comment : ('Перевод: ' + fl + ' → ' + tl);
+          sign = '⇄ '; cls = '';
         } else {
           name = (x.comment && x.comment.trim()) ? x.comment : (EXPENSE_CAT_NAMES[x.category] || 'Расход');
           sign = '−'; cls = '';
@@ -942,6 +954,24 @@ function autofillDebtAmount() {
 }
 debtTargetSel.addEventListener('change', autofillDebtAmount);
 
+// Перевод между своими счетами (дебетовая↔дебетовая, дебетовая↔накопительный).
+// Оба списка — только счета-активы. Общий баланс не меняется, в расход/доход не идёт.
+const transferFromSel = document.getElementById('tx-transfer-from');
+const transferToSel = document.getElementById('tx-transfer-to');
+Object.entries(accountMeta).forEach(([key, meta]) => {
+  if (meta.type !== 'asset') return;
+  const a = document.createElement('option'); a.value = key; a.textContent = meta.label; transferFromSel.appendChild(a);
+  const b = document.createElement('option'); b.value = key; b.textContent = meta.label; transferToSel.appendChild(b);
+});
+// по умолчанию «Куда» ≠ «Откуда»
+if (transferToSel.options.length > 1) transferToSel.selectedIndex = 1;
+function applyTransfer(fromKey, toKey, amount, sign) {
+  const fromEl = document.querySelector(`[data-key="${fromKey}"]`);
+  const toEl = document.querySelector(`[data-key="${toKey}"]`);
+  if (fromEl) { const v = (parseFloat(fromEl.value) || 0) - sign * amount; fromEl.value = Math.round(v * 100) / 100; state[fromKey] = fromEl.value; }
+  if (toEl) { const v = (parseFloat(toEl.value) || 0) + sign * amount; toEl.value = Math.round(v * 100) / 100; state[toKey] = toEl.value; }
+}
+
 document.getElementById('tx-date').value = todayStr();
 
 // Платёж по кредиту: деньги уходят с карты И долг уменьшается (два движения).
@@ -985,8 +1015,8 @@ function renderTransactions() {
     tbody.innerHTML = txs.map(t => {
       const typeLabel = t.type === 'income'
         ? 'Доход' + (t.category ? ' · ' + (incomeCategoryMeta[t.category] || t.category) : '')
-        : t.type === 'debtpay' ? 'Платёж по кредиту' : 'Расход';
-      const acct = t.type === 'debtpay'
+        : t.type === 'debtpay' ? 'Платёж по кредиту' : t.type === 'transfer' ? 'Перевод' : 'Расход';
+      const acct = (t.type === 'debtpay' || t.type === 'transfer')
         ? (accountMeta[t.accountKey] ? accountMeta[t.accountKey].label : t.accountKey) + ' → ' + (accountMeta[t.targetKey] ? accountMeta[t.targetKey].label : t.targetKey)
         : (accountMeta[t.accountKey] ? accountMeta[t.accountKey].label : t.accountKey);
       return `
@@ -994,7 +1024,7 @@ function renderTransactions() {
         <td>${t.date}</td>
         <td>${typeLabel}</td>
         <td>${acct}</td>
-        <td class="${t.type === 'income' ? 'amt-income' : 'amt-expense'}">${t.type === 'income' ? '+' : '−'}${fmt(t.amount)}</td>
+        <td class="${t.type === 'income' ? 'amt-income' : t.type === 'transfer' ? '' : 'amt-expense'}">${t.type === 'income' ? '+' : t.type === 'transfer' ? '⇄ ' : '−'}${fmt(t.amount)}</td>
         <td>${t.comment ? t.comment.replace(/</g,'&lt;') : ''}</td>
         <td><button type="button" class="tx-del" data-id="${t.id}" title="Удалить и отменить">✕</button></td>
       </tr>`;
@@ -1035,8 +1065,9 @@ function syncIncomeCatVisibility() {
   incomeCatWrap.hidden = v !== 'income';
   expenseCatWrap.hidden = v !== 'expense';
   // для платежа по кредиту: прячем обычный «Счёт» и категории, показываем два списка
-  document.getElementById('tx-account-wrap').hidden = v === 'debtpay';
+  document.getElementById('tx-account-wrap').hidden = v === 'debtpay' || v === 'transfer';
   document.getElementById('tx-debtpay-wrap').hidden = v !== 'debtpay';
+  document.getElementById('tx-transfer-wrap').hidden = v !== 'transfer';
   if (v === 'debtpay') autofillDebtAmount();
 }
 txTypeSelect.addEventListener('change', syncIncomeCatVisibility);
@@ -1097,7 +1128,13 @@ document.getElementById('tx-form').addEventListener('submit', (e) => {
   const comment = document.getElementById('tx-comment').value.trim();
   if (!amount || amount <= 0) return;
 
-  if (type === 'debtpay') {
+  if (type === 'transfer') {
+    const fromKey = document.getElementById('tx-transfer-from').value;
+    const toKey = document.getElementById('tx-transfer-to').value;
+    if (fromKey === toKey) { alert('Выбери два разных счёта: откуда и куда.'); return; }
+    applyTransfer(fromKey, toKey, amount, 1);
+    state.transactions.unshift({ id: Date.now(), date, type: 'transfer', accountKey: fromKey, targetKey: toKey, amount, comment });
+  } else if (type === 'debtpay') {
     const fromKey = document.getElementById('tx-debt-from').value;
     const targetKey = document.getElementById('tx-debt-target').value;
     applyDebtPay(fromKey, targetKey, amount, 1);
@@ -1124,7 +1161,7 @@ document.getElementById('tx-form').addEventListener('submit', (e) => {
     cameFromQuickAdd = false;
     showScreen('overview');
     window.scrollTo(0, 0);
-    showSavedToast(type === 'income' ? 'Доход добавлен ✓' : type === 'debtpay' ? 'Платёж внесён ✓' : 'Расход добавлен ✓');
+    showSavedToast(type === 'income' ? 'Доход добавлен ✓' : type === 'debtpay' ? 'Платёж внесён ✓' : type === 'transfer' ? 'Перевод записан ✓' : 'Расход добавлен ✓');
   }
 });
 
@@ -1146,7 +1183,9 @@ function showSavedToast(msg) {
 function deleteTx(id) {
   const tx = state.transactions.find(t => t.id === id);
   if (!tx) return;
-  if (tx.type === 'debtpay') {
+  if (tx.type === 'transfer') {
+    applyTransfer(tx.accountKey, tx.targetKey, tx.amount, -1);
+  } else if (tx.type === 'debtpay') {
     applyDebtPay(tx.accountKey, tx.targetKey, tx.amount, -1);
   } else {
     applyTxEffect(tx.accountKey, tx.type, tx.amount, -1);
@@ -1176,6 +1215,7 @@ renderTransactions();
 // ===== Статистика за месяц =====
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 function accAssetDelta(t) {
+  if (t.type === 'transfer') return 0; // перевод между своими счетами не меняет общую сумму активов
   const m = accountMeta[t.accountKey];
   if (!m || m.type !== 'asset') return 0;
   return t.type === 'income' ? t.amount : -t.amount;
@@ -1205,6 +1245,7 @@ function computeMonth(ym) {
     if (tym === ym) {
       if (t.type === 'income') income += t.amount;
       else if (t.type === 'debtpay') debtPay += t.amount;
+      else if (t.type === 'transfer') { /* перевод между счетами — не расход и не доход */ }
       else expense += t.amount;
       aIn += ad; dIn += dd;
     } else if (tym > ym) {
