@@ -397,6 +397,18 @@
     <div class="net-card net"><h3>Всего обязательных/мес.</h3><div class="val" id="sum-total-monthly">—</div></div>
   </div>
 
+  <div class="tx-card" id="plan-card">
+    <h2 style="margin:0 0 6px 0;font-size:18px;">Сколько закладывать в месяц</h2>
+    <div class="ms-note" style="margin:0 0 14px 0;">Рассрочки и сервисы — из твоих ежемесячных платежей. По Сберу впиши, сколько планируешь гасить (в блоке «Сбер — кредитная карта»).</div>
+    <div class="month-grid">
+      <div class="ms-tile out"><span class="lbl">Рассрочки МТС</span><span class="v" id="plan-mts">—</span></div>
+      <div class="ms-tile out"><span class="lbl">Рассрочки Тинькофф</span><span class="v" id="plan-tcs">—</span></div>
+      <div class="ms-tile out"><span class="lbl">Кредитка Сбер (план)</span><span class="v" id="plan-sber">—</span></div>
+      <div class="ms-tile out"><span class="lbl">Подписки / сервисы</span><span class="v" id="plan-subs">—</span></div>
+      <div class="ms-tile total"><span class="lbl">Итого закладываю в месяц</span><span class="v" id="plan-total">—</span></div>
+    </div>
+  </div>
+
   <section>
     <h2>Обязательные платежи в месяц (подписки/сервисы)</h2>
     <div class="hint">Список пока не полный — дополним, когда вспомнишь ещё</div>
@@ -462,6 +474,7 @@
         <div class="field"><label>Вся задолженность</label><input type="number" class="debt-input" data-key="sber" value="186531.96"></div>
         <div class="field"><label>Кредитный лимит</label><input type="number" class="info-input" data-key="sberlimit" value="640000"></div>
         <div class="field"><label>Остаток на карте</label><input type="text" id="sberFree" class="info-input" readonly tabindex="-1"></div>
+        <div class="field"><label>Планирую платить в месяц</label><input type="number" class="info-input" data-key="sberPay" value="0"></div>
       </div>
     </div>
   </section>
@@ -721,6 +734,19 @@ function recalc() {
   subKeys.forEach(k => { const el = document.querySelector(`[data-key="${k}"]`); if (el) subs += parseFloat(el.value) || 0; });
   document.getElementById('sum-subs').textContent = fmt(subs);
   document.getElementById('sum-total-monthly').textContent = fmt(payments + subs);
+
+  // План: сколько закладывать в месяц — по банкам отдельно
+  const getVal = k => { const el = document.querySelector(`[data-key="${k}"]`); return el ? (parseFloat(el.value) || 0) : 0; };
+  if (document.getElementById('plan-mts')) {
+    const planMts = getVal('mts1pay') + getVal('mts2pay');
+    const planTcs = getVal('tcs1pay') + getVal('tcs2pay') + getVal('tcs3pay');
+    const planSber = getVal('sberPay');
+    document.getElementById('plan-mts').textContent = fmt(planMts);
+    document.getElementById('plan-tcs').textContent = fmt(planTcs);
+    document.getElementById('plan-sber').textContent = fmt(planSber);
+    document.getElementById('plan-subs').textContent = fmt(subs);
+    document.getElementById('plan-total').textContent = fmt(planMts + planTcs + planSber + subs);
+  }
 
   const income = parseFloat(document.getElementById('income-current').value) || 0;
   const pct = Math.min(100, (income / 500000) * 100);
