@@ -461,6 +461,7 @@
         <h4>Сбер — кредитная карта</h4>
         <div class="field"><label>Вся задолженность</label><input type="number" class="debt-input" data-key="sber" value="186531.96"></div>
         <div class="field"><label>Кредитный лимит</label><input type="number" class="info-input" data-key="sberlimit" value="640000"></div>
+        <div class="field"><label>Остаток на карте</label><input type="text" id="sberFree" class="info-input" readonly tabindex="-1"></div>
       </div>
     </div>
   </section>
@@ -693,6 +694,14 @@ function recalc() {
   document.getElementById('sum-debts').textContent = fmt(debts);
   document.getElementById('sum-assets').textContent = fmt(assets);
   document.getElementById('sum-net').textContent = fmt(assets - debts);
+
+  // Сбер-кредитка: остаток на карте = лимит − задолженность (свободные деньги)
+  const sberFreeEl = document.getElementById('sberFree');
+  if (sberFreeEl) {
+    const lim = parseFloat(document.querySelector('[data-key="sberlimit"]').value) || 0;
+    const debt = parseFloat(document.querySelector('[data-key="sber"]').value) || 0;
+    sberFreeEl.value = fmt(lim - debt);
+  }
 
   const payKeys = ['mts1pay','mts2pay','tcs1pay','tcs2pay','tcs3pay'];
   let payments = 0;
