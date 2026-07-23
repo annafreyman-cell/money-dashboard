@@ -92,6 +92,24 @@
   .updated { font-size: 13px; color: #B7AF9C; margin-top: 20px; text-align: right; }
 
   .tx-card { background: #FFFFFF; border-radius: 20px; padding: 20px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); margin-bottom: 16px; }
+  /* Импорт банковской выписки */
+  .import-box { margin: 0 0 18px; }
+  .import-btn { width: 100%; background: #F6F0E6; border: 1.5px dashed #C9BCA6; color: #5B4B3A; font-weight: 700; font-size: 15px; padding: 15px; border-radius: 14px; cursor: pointer; font-family: inherit; }
+  .import-btn:active { background: #EFE7DA; }
+  .import-hint { font-size: 12.5px; color: #A79B86; text-align: center; margin-top: 7px; line-height: 1.35; }
+  #impResult { margin-top: 14px; }
+  .imp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; font-size: 14px; }
+  .imp-head select { flex: 1; min-width: 150px; padding: 9px 10px; border: 1px solid #E4DAC4; border-radius: 10px; font-size: 14px; background: #fff; }
+  .imp-list { max-height: 300px; overflow-y: auto; border: 1px solid #EBE2D4; border-radius: 12px; padding: 4px 6px; background: #FCFAF6; }
+  .imp-row { display: flex; align-items: center; gap: 9px; padding: 8px 6px; border-bottom: 1px solid #F2EBE0; font-size: 13px; }
+  .imp-row:last-child { border-bottom: none; }
+  .imp-row .d { color: #A79B86; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .imp-row .n { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .imp-row .a { font-weight: 700; white-space: nowrap; color: #D0603F; font-variant-numeric: tabular-nums; }
+  .imp-row .a.in { color: #2F8F6E; }
+  .imp-row.imp-dup { opacity: .42; }
+  .imp-add { width: 100%; margin-top: 12px; background: #2F8F6E; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .imp-add[disabled] { background: #C7C0B4; cursor: default; }
   .tx-totals { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
   .tx-totals div span.lbl { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #A79B86; font-weight: 700; margin-bottom: 3px; }
   .tx-totals div span.v { font-size: 19px; font-weight: 800; }
@@ -559,6 +577,14 @@
         <div><span class="lbl">Операций</span><span class="v" id="tx-count">0</span></div>
       </div>
       <div class="tx-totals" id="tx-income-breakdown"></div>
+
+      <div class="import-box">
+        <button type="button" class="import-btn" id="impBtn">📄 Загрузить выписку из банка</button>
+        <input type="file" id="impFile" accept="application/pdf,.pdf" hidden>
+        <div class="import-hint">Сбер — PDF-выписка: операции добавятся сами, без ручного ввода</div>
+        <div id="impResult"></div>
+      </div>
+
       <form class="tx-form" id="tx-form">
         <div class="fld"><label>Дата</label><input type="date" id="tx-date" required></div>
         <div class="fld"><label>Тип</label>
@@ -1275,6 +1301,87 @@ document.getElementById('todayList').addEventListener('click', (e) => {
 });
 
 renderTransactions();
+
+// ===== Импорт банковской выписки (PDF Сбера) =====
+(function () {
+  const STMT_API = 'https://ministerstvo.freyman.ru/api/statement/parse';
+  const btn = document.getElementById('impBtn');
+  const fileInp = document.getElementById('impFile');
+  const out = document.getElementById('impResult');
+  if (!btn || !fileInp || !out) return;
+
+  btn.addEventListener('click', () => fileInp.click());
+
+  fileInp.addEventListener('change', async () => {
+    const f = fileInp.files && fileInp.files[0];
+    if (!f) return;
+    out.innerHTML = '<div class="import-hint">Читаю выписку…</div>';
+    try {
+      const b64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result).split(',')[1]);
+        r.onerror = () => rej(new Error('файл не читается'));
+        r.readAsDataURL(f);
+      });
+      const resp = await fetch(STMT_API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdf: b64 })
+      });
+      const data = await resp.json();
+      if (!data || !data.ops || !data.ops.length) {
+        out.innerHTML = '<div class="import-hint">Операций не нашлось. Проверь, что это PDF-выписка Сбера.</div>';
+      } else {
+        showImport(data);
+      }
+    } catch (e) {
+      out.innerHTML = '<div class="import-hint">Не получилось: ' + (e && e.message ? e.message : e) + '</div>';
+    }
+    fileInp.value = '';
+  });
+
+  function showImport(data) {
+    const existing = new Set((state.transactions || []).map(t => t.impKey).filter(Boolean));
+    const fresh = data.ops.filter(o => !existing.has(o.key));
+    const dupCount = data.ops.length - fresh.length;
+    const defAcc = data.card === 'debit' ? 'sberDebit' : 'sber';
+    const opts = Object.keys(accountMeta).map(k =>
+      '<option value="' + k + '"' + (k === defAcc ? ' selected' : '') + '>' + accountMeta[k].label + '</option>').join('');
+    const rows = data.ops.map(o => {
+      const dup = existing.has(o.key);
+      const name = String(o.comment || o.catRaw || 'Операция').replace(/</g, '&lt;');
+      return '<div class="imp-row' + (dup ? ' imp-dup' : '') + '">' +
+        '<span class="d">' + o.date.slice(8, 10) + '.' + o.date.slice(5, 7) + '</span>' +
+        '<span class="n">' + name + '</span>' +
+        '<span class="a' + (o.type === 'income' ? ' in' : '') + '">' + (o.type === 'income' ? '+' : '−') + fmt(o.amount) + '</span>' +
+        '</div>';
+    }).join('');
+    const per = data.period ? (data.period.from + ' — ' + data.period.to) : '';
+    out.innerHTML =
+      '<div class="imp-head"><div><b>Найдено: ' + data.ops.length + '</b>' +
+      (dupCount ? ' · уже внесено: ' + dupCount : '') +
+      (per ? '<br><span style="color:#A79B86;font-size:12.5px">' + per + '</span>' : '') +
+      '</div><select id="impAcc">' + opts + '</select></div>' +
+      '<div class="imp-list">' + rows + '</div>' +
+      '<button type="button" class="imp-add" id="impAdd"' + (fresh.length ? '' : ' disabled') + '>' +
+      (fresh.length ? 'Добавить ' + fresh.length + ' оп. в приложение' : 'Все операции уже внесены') + '</button>';
+    const addBtn = document.getElementById('impAdd');
+    if (addBtn && fresh.length) addBtn.onclick = function () {
+      const acc = document.getElementById('impAcc').value;
+      let n = 0;
+      fresh.forEach(function (o) {
+        applyTxEffect(acc, o.type, o.amount, 1);
+        state.transactions.unshift({
+          id: Date.now() + Math.floor(Math.random() * 10000),
+          date: o.date, type: o.type, accountKey: acc, amount: o.amount,
+          comment: o.comment, category: o.category, impKey: o.key
+        });
+        n++;
+      });
+      saveState(state); recalc(); renderTransactions();
+      out.innerHTML = '<div class="import-hint">✓ Добавлено операций: ' + n + '. Остатки пересчитаны.</div>';
+    };
+  }
+})();
 
 // ===== Статистика за месяц =====
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
