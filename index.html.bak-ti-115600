@@ -98,15 +98,6 @@
   .import-btn:active { background: #EFE7DA; }
   .import-hint { font-size: 12.5px; color: #A79B86; text-align: center; margin-top: 7px; line-height: 1.35; }
   #impResult { margin-top: 14px; }
-  .setup-btn { margin-top: 14px; border-style: solid; border-color: #D8B4A0; background: #FBF1EA; color: #8A5A42; }
-  .setup-btn:active { background: #F3E3D8; }
-  .open-box { margin: 0 0 18px; background: #F7F2EA; border: 1px solid #E4D8C4; border-radius: 14px; padding: 14px 16px; }
-  .open-title { font-size: 14px; font-weight: 700; color: #5B4B3A; margin: 0 0 10px; }
-  .open-list { display: flex; flex-direction: column; gap: 7px; }
-  .open-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; color: #5B4B3A; }
-  .open-row span:last-child { font-weight: 700; font-variant-numeric: tabular-nums; }
-  .open-row.debt span:last-child { color: #C0603F; }
-  .open-row.muted span { color: #A79B86; font-weight: 500; }
   .imp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; font-size: 14px; }
   .imp-head select { flex: 1; min-width: 150px; padding: 9px 10px; border: 1px solid #E4DAC4; border-radius: 10px; font-size: 14px; background: #fff; }
   .imp-list { max-height: 300px; overflow-y: auto; border: 1px solid #EBE2D4; border-radius: 12px; padding: 4px 6px; background: #FCFAF6; }
@@ -119,12 +110,6 @@
   .imp-row.imp-dup { opacity: .42; }
   .imp-add { width: 100%; margin-top: 12px; background: #2F8F6E; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .imp-add[disabled] { background: #C7C0B4; cursor: default; }
-  .imp-hint2 { font-size: 12px; color: #8A7E68; margin: 10px 2px; line-height: 1.4; }
-  .imp-row { flex-wrap: wrap; }
-  .imp-row .a { color: #1C1B33; }
-  .imp-sel { font-size: 12px; padding: 4px 6px; border: 1px solid #D9CDB6; border-radius: 8px; background: #fff; font-family: inherit; }
-  .imp-row.imp-flag { background: #FBF3DF; border-radius: 8px; padding: 8px; }
-  .imp-dupmark { font-size: 11px; color: #A79B86; white-space: nowrap; }
   .tx-totals { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
   .tx-totals div span.lbl { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #A79B86; font-weight: 700; margin-bottom: 3px; }
   .tx-totals div span.v { font-size: 19px; font-weight: 800; }
@@ -598,21 +583,6 @@
         <input type="file" id="impFile" accept="application/pdf,.pdf" hidden>
         <div class="import-hint">Сбер — PDF-выписка: операции добавятся сами, без ручного ввода</div>
         <div id="impResult"></div>
-        <button type="button" class="import-btn setup-btn" id="setupBtn">🧾 Настроить по выпискам (чистый старт)</button>
-        <div class="import-hint" id="setupHint">Один раз: очистит историю операций и выставит остатки счетов по выпискам на сейчас. После этого загрузи выписки за месяц.</div>
-      </div>
-
-      <div class="open-box" id="openBox">
-        <h3 class="open-title">💼 Остатки на 01.07.2026 (из выписок)</h3>
-        <div class="open-list">
-          <div class="open-row"><span>Сбер Дебетовая</span><span>3,79 ₽</span></div>
-          <div class="open-row"><span>Сбер Вклад «Универсальный»</span><span>6 644,49 ₽</span></div>
-          <div class="open-row"><span>Точка …422674</span><span>181 923,47 ₽</span></div>
-          <div class="open-row"><span>Точка …131318</span><span>757,21 ₽</span></div>
-          <div class="open-row debt"><span>Сбер Кредитка (долг)</span><span>≈ 232 650 ₽</span></div>
-          <div class="open-row muted"><span>Тинькофф Black</span><span>в справке остатка нет</span></div>
-        </div>
-        <div class="import-hint">Это состояние на начало июля — для сравнения с текущими остатками выше.</div>
       </div>
 
       <form class="tx-form" id="tx-form">
@@ -1301,12 +1271,6 @@ function showSavedToast(msg) {
 function deleteTx(id) {
   const tx = state.transactions.find(t => t.id === id);
   if (!tx) return;
-  if (tx.histOnly) {
-    // Импортированная операция баланс не меняла — просто убираем из истории
-    state.transactions = state.transactions.filter(t => t.id !== id);
-    saveState(state); recalc(); renderTransactions();
-    return;
-  }
   if (tx.type === 'adjust') {
     applyAdjust(tx.accountKey, tx.amount, tx.dir, -1);
   } else if (tx.type === 'transfer') {
@@ -1377,102 +1341,51 @@ renderTransactions();
 
   function showImport(data) {
     const existing = new Set((state.transactions || []).map(t => t.impKey).filter(Boolean));
-    const ops = data.ops;
-    const defAcc = data.defaultAccount || (data.card === 'debit' ? 'sberDebit' : 'sber');
+    const fresh = data.ops.filter(o => !existing.has(o.key));
+    const dupCount = data.ops.length - fresh.length;
+    const defAcc = data.card === 'debit' ? 'sberDebit' : 'sber';
     const opts = Object.keys(accountMeta).map(k =>
       '<option value="' + k + '"' + (k === defAcc ? ' selected' : '') + '>' + accountMeta[k].label + '</option>').join('');
-    const bankName = data.bank === 'tinkoff' ? 'Тинькофф' : (data.bank === 'sber' ? 'Сбер' : 'Банк');
-    const per = data.period ? (data.period.from + ' — ' + data.period.to) : '';
-    const rows = ops.map(function (o, idx) {
+    const rows = data.ops.map(o => {
       const dup = existing.has(o.key);
       const name = String(o.comment || o.catRaw || 'Операция').replace(/</g, '&lt;');
-      const sel = dup
-        ? '<span class="imp-dupmark">внесено</span>'
-        : '<select class="imp-sel" data-idx="' + idx + '">' +
-            '<option value="expense"' + (o.kind === 'expense' ? ' selected' : '') + '>Расход</option>' +
-            '<option value="income"' + (o.kind === 'income' ? ' selected' : '') + '>Доход</option>' +
-            '<option value="skip"' + (o.kind === 'skip' ? ' selected' : '') + '>Пропустить</option>' +
-          '</select>';
-      return '<div class="imp-row' + (dup ? ' imp-dup' : '') + (o.flag ? ' imp-flag' : '') + '">' +
+      return '<div class="imp-row' + (dup ? ' imp-dup' : '') + '">' +
         '<span class="d">' + o.date.slice(8, 10) + '.' + o.date.slice(5, 7) + '</span>' +
-        '<span class="n">' + name + (o.flag ? ' <b style="color:#C0842E">⚠</b>' : '') + '</span>' +
-        '<span class="a">' + fmt(o.amount) + '</span>' + sel +
+        '<span class="n">' + name + '</span>' +
+        '<span class="a' + (o.type === 'income' ? ' in' : '') + '">' + (o.type === 'income' ? '+' : '−') + fmt(o.amount) + '</span>' +
         '</div>';
     }).join('');
+    const per = data.period ? (data.period.from + ' — ' + data.period.to) : '';
     out.innerHTML =
-      '<div class="imp-head"><div><b>' + bankName + ' · найдено: ' + ops.length + '</b>' +
+      '<div class="imp-head"><div><b>Найдено: ' + data.ops.length + '</b>' +
+      (dupCount ? ' · уже внесено: ' + dupCount : '') +
       (per ? '<br><span style="color:#A79B86;font-size:12.5px">' + per + '</span>' : '') +
       '</div><select id="impAcc">' + opts + '</select></div>' +
-      '<div class="imp-hint2">Проверь тип каждой операции. Внутренние переводы стоят «Пропустить». ⚠ — реши сама (оплата человеку = Расход, себе/кредит = Пропустить).</div>' +
       '<div class="imp-list">' + rows + '</div>' +
-      '<button type="button" class="imp-add" id="impAdd">Добавить в приложение</button>';
+      '<button type="button" class="imp-add" id="impAdd"' + (fresh.length ? '' : ' disabled') + '>' +
+      (fresh.length ? 'Добавить ' + fresh.length + ' оп. в приложение' : 'Все операции уже внесены') + '</button>';
     const addBtn = document.getElementById('impAdd');
-    const sels = [].slice.call(document.querySelectorAll('.imp-sel'));
-    function updateCount() {
-      let n = 0; sels.forEach(function (s) { if (s.value !== 'skip') n++; });
-      addBtn.textContent = n ? ('Добавить ' + n + ' оп. в приложение') : 'Нечего добавлять';
-      addBtn.disabled = !n;
-    }
-    sels.forEach(function (s) { s.addEventListener('change', updateCount); });
-    updateCount();
-    addBtn.onclick = function () {
+    if (addBtn && fresh.length) addBtn.onclick = function () {
       const acc = document.getElementById('impAcc').value;
       let n = 0;
-      sels.forEach(function (s) {
-        const kind = s.value;
-        if (kind === 'skip') return;
-        const o = ops[+s.dataset.idx];
-        // Импорт — только для истории/статистики: баланс НЕ трогаем
-        // (он выставляется по выпискам напрямую, внутренние переводы скрыты).
+      fresh.forEach(function (o) {
+        applyTxEffect(acc, o.type, o.amount, 1);
         state.transactions.unshift({
-          id: Date.now() + Math.floor(Math.random() * 100000) + n,
-          date: o.date, type: kind, accountKey: acc, amount: o.amount,
-          comment: o.comment, category: o.category || 'other', impKey: o.key,
-          histOnly: true
+          id: Date.now() + Math.floor(Math.random() * 10000),
+          date: o.date, type: o.type, accountKey: acc, amount: o.amount,
+          comment: o.comment, category: o.category, impKey: o.key
         });
         n++;
       });
       saveState(state); recalc(); renderTransactions();
-      out.innerHTML = '<div class="import-hint">✓ Добавлено в статистику: ' + n + ' оп. Остатки счетов не тронуты — они выставлены по выпискам.</div>';
+      out.innerHTML = '<div class="import-hint">✓ Добавлено операций: ' + n + '. Остатки пересчитаны.</div>';
     };
   }
-})();
-
-// ===== Чистый старт по выпискам =====
-(function () {
-  const btn = document.getElementById('setupBtn');
-  if (!btn) return;
-  // Текущие остатки счетов по выпискам (закрытие периода = сейчас).
-  // Счета без выписок (Тинькофф вклады, Black, копилка, долги) не трогаем — их правишь вручную.
-  const CLOSING = {
-    sberDebit: 52.21,      // Сбер дебетовая, остаток на 24.07
-    tochka: 182970.65,     // Точка …422674, исходящий остаток
-    sber: 201765.61        // Сбер кредитка — общая задолженность (долг)
-  };
-  function setKey(k, v) {
-    const el = document.querySelector('[data-key="' + k + '"]');
-    if (!el) return;
-    el.value = v;
-    state[k] = v;
-  }
-  btn.onclick = function () {
-    if (!window.confirm('Очистить всю историю операций и выставить остатки Сбер-дебетовой, Точки и долга по кредитке по выпискам? Счета без выписок (вклады, Black, долги МТС/Тинькофф) останутся как есть — их поправишь вручную.')) return;
-    state.transactions = [];
-    Object.keys(CLOSING).forEach(function (k) { setKey(k, CLOSING[k]); });
-    saveState(state);
-    recalc();
-    renderTransactions();
-    if (typeof renderMonthStats === 'function') try { renderMonthStats(); } catch (e) {}
-    const hint = document.getElementById('setupHint');
-    if (hint) hint.innerHTML = '<b style="color:#6E9C6E">✓ Готово.</b> История очищена, остатки выставлены. Теперь загрузи выписки за месяц кнопкой выше.';
-    alert('Готово! История очищена, остатки выставлены по выпискам. Теперь загрузи выписки за месяц.');
-  };
 })();
 
 // ===== Статистика за месяц =====
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 function accAssetDelta(t) {
-  if (t.histOnly) return 0; // импорт из выписки — только для статистики, баланс не двигал
   if (t.type === 'transfer') return 0; // перевод между своими счетами не меняет общую сумму активов
   const m = accountMeta[t.accountKey];
   if (!m || m.type !== 'asset') return 0;
@@ -1480,7 +1393,6 @@ function accAssetDelta(t) {
   return t.type === 'income' ? t.amount : -t.amount;
 }
 function accDebtDelta(t) {
-  if (t.histOnly) return 0; // импорт из выписки — только для статистики, баланс не двигал
   if (t.type === 'debtpay') return -t.amount; // платёж уменьшает долг (гасим targetKey)
   const m = accountMeta[t.accountKey];
   if (!m || m.type !== 'credit') return 0;

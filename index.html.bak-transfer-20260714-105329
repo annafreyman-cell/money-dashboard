@@ -92,39 +92,6 @@
   .updated { font-size: 13px; color: #B7AF9C; margin-top: 20px; text-align: right; }
 
   .tx-card { background: #FFFFFF; border-radius: 20px; padding: 20px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); margin-bottom: 16px; }
-  /* Импорт банковской выписки */
-  .import-box { margin: 0 0 18px; }
-  .import-btn { width: 100%; background: #F6F0E6; border: 1.5px dashed #C9BCA6; color: #5B4B3A; font-weight: 700; font-size: 15px; padding: 15px; border-radius: 14px; cursor: pointer; font-family: inherit; }
-  .import-btn:active { background: #EFE7DA; }
-  .import-hint { font-size: 12.5px; color: #A79B86; text-align: center; margin-top: 7px; line-height: 1.35; }
-  #impResult { margin-top: 14px; }
-  .setup-btn { margin-top: 14px; border-style: solid; border-color: #D8B4A0; background: #FBF1EA; color: #8A5A42; }
-  .setup-btn:active { background: #F3E3D8; }
-  .open-box { margin: 0 0 18px; background: #F7F2EA; border: 1px solid #E4D8C4; border-radius: 14px; padding: 14px 16px; }
-  .open-title { font-size: 14px; font-weight: 700; color: #5B4B3A; margin: 0 0 10px; }
-  .open-list { display: flex; flex-direction: column; gap: 7px; }
-  .open-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; color: #5B4B3A; }
-  .open-row span:last-child { font-weight: 700; font-variant-numeric: tabular-nums; }
-  .open-row.debt span:last-child { color: #C0603F; }
-  .open-row.muted span { color: #A79B86; font-weight: 500; }
-  .imp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; font-size: 14px; }
-  .imp-head select { flex: 1; min-width: 150px; padding: 9px 10px; border: 1px solid #E4DAC4; border-radius: 10px; font-size: 14px; background: #fff; }
-  .imp-list { max-height: 300px; overflow-y: auto; border: 1px solid #EBE2D4; border-radius: 12px; padding: 4px 6px; background: #FCFAF6; }
-  .imp-row { display: flex; align-items: center; gap: 9px; padding: 8px 6px; border-bottom: 1px solid #F2EBE0; font-size: 13px; }
-  .imp-row:last-child { border-bottom: none; }
-  .imp-row .d { color: #A79B86; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .imp-row .n { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .imp-row .a { font-weight: 700; white-space: nowrap; color: #D0603F; font-variant-numeric: tabular-nums; }
-  .imp-row .a.in { color: #2F8F6E; }
-  .imp-row.imp-dup { opacity: .42; }
-  .imp-add { width: 100%; margin-top: 12px; background: #2F8F6E; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
-  .imp-add[disabled] { background: #C7C0B4; cursor: default; }
-  .imp-hint2 { font-size: 12px; color: #8A7E68; margin: 10px 2px; line-height: 1.4; }
-  .imp-row { flex-wrap: wrap; }
-  .imp-row .a { color: #1C1B33; }
-  .imp-sel { font-size: 12px; padding: 4px 6px; border: 1px solid #D9CDB6; border-radius: 8px; background: #fff; font-family: inherit; }
-  .imp-row.imp-flag { background: #FBF3DF; border-radius: 8px; padding: 8px; }
-  .imp-dupmark { font-size: 11px; color: #A79B86; white-space: nowrap; }
   .tx-totals { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
   .tx-totals div span.lbl { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #A79B86; font-weight: 700; margin-bottom: 3px; }
   .tx-totals div span.v { font-size: 19px; font-weight: 800; }
@@ -430,18 +397,6 @@
     <div class="net-card net"><h3>Всего обязательных/мес.</h3><div class="val" id="sum-total-monthly">—</div></div>
   </div>
 
-  <div class="tx-card" id="plan-card">
-    <h2 style="margin:0 0 6px 0;font-size:18px;">Сколько закладывать в месяц</h2>
-    <div class="ms-note" style="margin:0 0 14px 0;">Рассрочки и сервисы — из твоих ежемесячных платежей. По Сберу впиши, сколько планируешь гасить (в блоке «Сбер — кредитная карта»).</div>
-    <div class="month-grid">
-      <div class="ms-tile out"><span class="lbl">Рассрочки МТС</span><span class="v" id="plan-mts">—</span></div>
-      <div class="ms-tile out"><span class="lbl">Рассрочки Тинькофф</span><span class="v" id="plan-tcs">—</span></div>
-      <div class="ms-tile out"><span class="lbl">Кредитка Сбер (план)</span><span class="v" id="plan-sber">—</span></div>
-      <div class="ms-tile out"><span class="lbl">Подписки / сервисы</span><span class="v" id="plan-subs">—</span></div>
-      <div class="ms-tile total"><span class="lbl">Итого закладываю в месяц</span><span class="v" id="plan-total">—</span></div>
-    </div>
-  </div>
-
   <section>
     <h2>Обязательные платежи в месяц (подписки/сервисы)</h2>
     <div class="hint">Список пока не полный — дополним, когда вспомнишь ещё</div>
@@ -506,8 +461,6 @@
         <h4>Сбер — кредитная карта</h4>
         <div class="field"><label>Вся задолженность</label><input type="number" class="debt-input" data-key="sber" value="186531.96"></div>
         <div class="field"><label>Кредитный лимит</label><input type="number" class="info-input" data-key="sberlimit" value="640000"></div>
-        <div class="field"><label>Остаток на карте</label><input type="text" id="sberFree" class="info-input" readonly tabindex="-1"></div>
-        <div class="field"><label>Планирую платить в месяц</label><input type="number" class="info-input" data-key="sberPay" value="0"></div>
       </div>
     </div>
   </section>
@@ -592,29 +545,6 @@
         <div><span class="lbl">Операций</span><span class="v" id="tx-count">0</span></div>
       </div>
       <div class="tx-totals" id="tx-income-breakdown"></div>
-
-      <div class="import-box">
-        <button type="button" class="import-btn" id="impBtn">📄 Загрузить выписку из банка</button>
-        <input type="file" id="impFile" accept="application/pdf,.pdf" hidden>
-        <div class="import-hint">Сбер — PDF-выписка: операции добавятся сами, без ручного ввода</div>
-        <div id="impResult"></div>
-        <button type="button" class="import-btn setup-btn" id="setupBtn">🧾 Настроить по выпискам (чистый старт)</button>
-        <div class="import-hint" id="setupHint">Один раз: очистит историю операций и выставит остатки счетов по выпискам на сейчас. После этого загрузи выписки за месяц.</div>
-      </div>
-
-      <div class="open-box" id="openBox">
-        <h3 class="open-title">💼 Остатки на 01.07.2026 (из выписок)</h3>
-        <div class="open-list">
-          <div class="open-row"><span>Сбер Дебетовая</span><span>3,79 ₽</span></div>
-          <div class="open-row"><span>Сбер Вклад «Универсальный»</span><span>6 644,49 ₽</span></div>
-          <div class="open-row"><span>Точка …422674</span><span>181 923,47 ₽</span></div>
-          <div class="open-row"><span>Точка …131318</span><span>757,21 ₽</span></div>
-          <div class="open-row debt"><span>Сбер Кредитка (долг)</span><span>≈ 232 650 ₽</span></div>
-          <div class="open-row muted"><span>Тинькофф Black</span><span>в справке остатка нет</span></div>
-        </div>
-        <div class="import-hint">Это состояние на начало июля — для сравнения с текущими остатками выше.</div>
-      </div>
-
       <form class="tx-form" id="tx-form">
         <div class="fld"><label>Дата</label><input type="date" id="tx-date" required></div>
         <div class="fld"><label>Тип</label>
@@ -622,8 +552,6 @@
             <option value="expense">Расход</option>
             <option value="income">Доход</option>
             <option value="debtpay">Платёж по кредиту/рассрочке</option>
-            <option value="transfer">Перевод между счетами</option>
-            <option value="adjust">Корректировка (подбить баланс)</option>
           </select>
         </div>
         <div class="fld" id="tx-expense-cat-wrap"><label>Категория расхода</label>
@@ -656,19 +584,6 @@
           <select id="tx-debt-from"></select>
           <label style="margin-top:8px;">Какой долг гасишь</label>
           <select id="tx-debt-target"></select>
-        </div>
-        <div class="fld" id="tx-transfer-wrap" hidden>
-          <label>Откуда (списать)</label>
-          <select id="tx-transfer-from"></select>
-          <label style="margin-top:8px;">Куда (зачислить)</label>
-          <select id="tx-transfer-to"></select>
-        </div>
-        <div class="fld" id="tx-adjust-dir-wrap" hidden>
-          <label>Куда подбить</label>
-          <select id="tx-adjust-dir">
-            <option value="plus">В плюс (добавить к остатку)</option>
-            <option value="minus">В минус (убавить с остатка)</option>
-          </select>
         </div>
         <div class="fld"><label>Сумма</label><input type="number" id="tx-amount" step="0.01" min="0.01" required></div>
         <div class="fld"><label>Комментарий</label><input type="text" id="tx-comment" placeholder="например, продукты"></div>
@@ -772,14 +687,6 @@ function recalc() {
   document.getElementById('sum-assets').textContent = fmt(assets);
   document.getElementById('sum-net').textContent = fmt(assets - debts);
 
-  // Сбер-кредитка: остаток на карте = лимит − задолженность (свободные деньги)
-  const sberFreeEl = document.getElementById('sberFree');
-  if (sberFreeEl) {
-    const lim = parseFloat(document.querySelector('[data-key="sberlimit"]').value) || 0;
-    const debt = parseFloat(document.querySelector('[data-key="sber"]').value) || 0;
-    sberFreeEl.value = fmt(lim - debt);
-  }
-
   const payKeys = ['mts1pay','mts2pay','tcs1pay','tcs2pay','tcs3pay'];
   let payments = 0;
   payKeys.forEach(k => { const el = document.querySelector(`[data-key="${k}"]`); if (el) payments += parseFloat(el.value) || 0; });
@@ -790,19 +697,6 @@ function recalc() {
   subKeys.forEach(k => { const el = document.querySelector(`[data-key="${k}"]`); if (el) subs += parseFloat(el.value) || 0; });
   document.getElementById('sum-subs').textContent = fmt(subs);
   document.getElementById('sum-total-monthly').textContent = fmt(payments + subs);
-
-  // План: сколько закладывать в месяц — по банкам отдельно
-  const getVal = k => { const el = document.querySelector(`[data-key="${k}"]`); return el ? (parseFloat(el.value) || 0) : 0; };
-  if (document.getElementById('plan-mts')) {
-    const planMts = getVal('mts1pay') + getVal('mts2pay');
-    const planTcs = getVal('tcs1pay') + getVal('tcs2pay') + getVal('tcs3pay');
-    const planSber = getVal('sberPay');
-    document.getElementById('plan-mts').textContent = fmt(planMts);
-    document.getElementById('plan-tcs').textContent = fmt(planTcs);
-    document.getElementById('plan-sber').textContent = fmt(planSber);
-    document.getElementById('plan-subs').textContent = fmt(subs);
-    document.getElementById('plan-total').textContent = fmt(planMts + planTcs + planSber + subs);
-  }
 
   const income = parseFloat(document.getElementById('income-current').value) || 0;
   const pct = Math.min(100, (income / 500000) * 100);
@@ -923,7 +817,7 @@ function renderToday() {
   if (nextBtn) nextBtn.disabled = dayOffset >= 0;
   // все операции дня: расходы, доходы и платежи по кредиту
   const dayTx = (state.transactions || []).filter(x => (x.date || '') === t &&
-    (x.type === 'expense' || x.type === 'income' || x.type === 'debtpay' || x.type === 'transfer' || x.type === 'adjust'));
+    (x.type === 'expense' || x.type === 'income' || x.type === 'debtpay'));
   const expenseTotal = dayTx.filter(x => x.type === 'expense').reduce((a, x) => a + x.amount, 0);
   const incomeTotal = dayTx.filter(x => x.type === 'income').reduce((a, x) => a + x.amount, 0);
   const net = incomeTotal - expenseTotal;
@@ -943,14 +837,6 @@ function renderToday() {
         } else if (x.type === 'debtpay') {
           name = (x.comment && x.comment.trim()) ? x.comment : 'Платёж по кредиту';
           sign = '−'; cls = '';
-        } else if (x.type === 'transfer') {
-          const fl = accountMeta[x.accountKey] ? accountMeta[x.accountKey].label : x.accountKey;
-          const tl = accountMeta[x.targetKey] ? accountMeta[x.targetKey].label : x.targetKey;
-          name = (x.comment && x.comment.trim()) ? x.comment : ('Перевод: ' + fl + ' → ' + tl);
-          sign = '⇄ '; cls = '';
-        } else if (x.type === 'adjust') {
-          name = (x.comment && x.comment.trim()) ? x.comment : 'Корректировка';
-          sign = x.dir > 0 ? '+' : '−'; cls = x.dir > 0 ? 'in' : '';
         } else {
           name = (x.comment && x.comment.trim()) ? x.comment : (EXPENSE_CAT_NAMES[x.category] || 'Расход');
           sign = '−'; cls = '';
@@ -1056,33 +942,6 @@ function autofillDebtAmount() {
 }
 debtTargetSel.addEventListener('change', autofillDebtAmount);
 
-// Перевод между своими счетами (дебетовая↔дебетовая, дебетовая↔накопительный).
-// Оба списка — только счета-активы. Общий баланс не меняется, в расход/доход не идёт.
-const transferFromSel = document.getElementById('tx-transfer-from');
-const transferToSel = document.getElementById('tx-transfer-to');
-Object.entries(accountMeta).forEach(([key, meta]) => {
-  if (meta.type !== 'asset') return;
-  const a = document.createElement('option'); a.value = key; a.textContent = meta.label; transferFromSel.appendChild(a);
-  const b = document.createElement('option'); b.value = key; b.textContent = meta.label; transferToSel.appendChild(b);
-});
-// по умолчанию «Куда» ≠ «Откуда»
-if (transferToSel.options.length > 1) transferToSel.selectedIndex = 1;
-function applyTransfer(fromKey, toKey, amount, sign) {
-  const fromEl = document.querySelector(`[data-key="${fromKey}"]`);
-  const toEl = document.querySelector(`[data-key="${toKey}"]`);
-  if (fromEl) { const v = (parseFloat(fromEl.value) || 0) - sign * amount; fromEl.value = Math.round(v * 100) / 100; state[fromKey] = fromEl.value; }
-  if (toEl) { const v = (parseFloat(toEl.value) || 0) + sign * amount; toEl.value = Math.round(v * 100) / 100; state[toKey] = toEl.value; }
-}
-
-// Корректировка: подбить остаток счёта под реальность. dir = +1 (в плюс) / -1 (в минус).
-function applyAdjust(accountKey, amount, dir, sign) {
-  const el = document.querySelector(`[data-key="${accountKey}"]`);
-  if (!el) return;
-  const v = (parseFloat(el.value) || 0) + sign * dir * amount;
-  el.value = Math.round(v * 100) / 100;
-  state[accountKey] = el.value;
-}
-
 document.getElementById('tx-date').value = todayStr();
 
 // Платёж по кредиту: деньги уходят с карты И долг уменьшается (два движения).
@@ -1126,8 +985,8 @@ function renderTransactions() {
     tbody.innerHTML = txs.map(t => {
       const typeLabel = t.type === 'income'
         ? 'Доход' + (t.category ? ' · ' + (incomeCategoryMeta[t.category] || t.category) : '')
-        : t.type === 'debtpay' ? 'Платёж по кредиту' : t.type === 'transfer' ? 'Перевод' : t.type === 'adjust' ? 'Корректировка' : 'Расход';
-      const acct = (t.type === 'debtpay' || t.type === 'transfer')
+        : t.type === 'debtpay' ? 'Платёж по кредиту' : 'Расход';
+      const acct = t.type === 'debtpay'
         ? (accountMeta[t.accountKey] ? accountMeta[t.accountKey].label : t.accountKey) + ' → ' + (accountMeta[t.targetKey] ? accountMeta[t.targetKey].label : t.targetKey)
         : (accountMeta[t.accountKey] ? accountMeta[t.accountKey].label : t.accountKey);
       return `
@@ -1135,7 +994,7 @@ function renderTransactions() {
         <td>${t.date}</td>
         <td>${typeLabel}</td>
         <td>${acct}</td>
-        <td class="${t.type === 'income' ? 'amt-income' : t.type === 'transfer' ? '' : t.type === 'adjust' ? (t.dir > 0 ? 'amt-income' : 'amt-expense') : 'amt-expense'}">${t.type === 'income' ? '+' : t.type === 'transfer' ? '⇄ ' : t.type === 'adjust' ? (t.dir > 0 ? '+' : '−') : '−'}${fmt(t.amount)}</td>
+        <td class="${t.type === 'income' ? 'amt-income' : 'amt-expense'}">${t.type === 'income' ? '+' : '−'}${fmt(t.amount)}</td>
         <td>${t.comment ? t.comment.replace(/</g,'&lt;') : ''}</td>
         <td><button type="button" class="tx-del" data-id="${t.id}" title="Удалить и отменить">✕</button></td>
       </tr>`;
@@ -1176,10 +1035,8 @@ function syncIncomeCatVisibility() {
   incomeCatWrap.hidden = v !== 'income';
   expenseCatWrap.hidden = v !== 'expense';
   // для платежа по кредиту: прячем обычный «Счёт» и категории, показываем два списка
-  document.getElementById('tx-account-wrap').hidden = v === 'debtpay' || v === 'transfer';
+  document.getElementById('tx-account-wrap').hidden = v === 'debtpay';
   document.getElementById('tx-debtpay-wrap').hidden = v !== 'debtpay';
-  document.getElementById('tx-transfer-wrap').hidden = v !== 'transfer';
-  document.getElementById('tx-adjust-dir-wrap').hidden = v !== 'adjust';
   if (v === 'debtpay') autofillDebtAmount();
 }
 txTypeSelect.addEventListener('change', syncIncomeCatVisibility);
@@ -1240,23 +1097,11 @@ document.getElementById('tx-form').addEventListener('submit', (e) => {
   const comment = document.getElementById('tx-comment').value.trim();
   if (!amount || amount <= 0) return;
 
-  if (type === 'transfer') {
-    const fromKey = document.getElementById('tx-transfer-from').value;
-    const toKey = document.getElementById('tx-transfer-to').value;
-    if (fromKey === toKey) { alert('Выбери два разных счёта: откуда и куда.'); return; }
-    applyTransfer(fromKey, toKey, amount, 1);
-    state.transactions.unshift({ id: Date.now(), date, type: 'transfer', accountKey: fromKey, targetKey: toKey, amount, comment });
-  } else if (type === 'debtpay') {
+  if (type === 'debtpay') {
     const fromKey = document.getElementById('tx-debt-from').value;
     const targetKey = document.getElementById('tx-debt-target').value;
     applyDebtPay(fromKey, targetKey, amount, 1);
     state.transactions.unshift({ id: Date.now(), date, type: 'debtpay', accountKey: fromKey, targetKey, amount, comment });
-  } else if (type === 'adjust') {
-    const accountKey = document.getElementById('tx-account').value;
-    const dir = document.getElementById('tx-adjust-dir').value === 'minus' ? -1 : 1;
-    const cmt = comment || 'не сходится в расчётах';
-    applyAdjust(accountKey, amount, dir, 1);
-    state.transactions.unshift({ id: Date.now(), date, type: 'adjust', accountKey, amount, dir, comment: cmt });
   } else {
     const accountKey = document.getElementById('tx-account').value;
     const category = type === 'income'
@@ -1279,7 +1124,7 @@ document.getElementById('tx-form').addEventListener('submit', (e) => {
     cameFromQuickAdd = false;
     showScreen('overview');
     window.scrollTo(0, 0);
-    showSavedToast(type === 'income' ? 'Доход добавлен ✓' : type === 'debtpay' ? 'Платёж внесён ✓' : type === 'transfer' ? 'Перевод записан ✓' : type === 'adjust' ? 'Баланс подбит ✓' : 'Расход добавлен ✓');
+    showSavedToast(type === 'income' ? 'Доход добавлен ✓' : type === 'debtpay' ? 'Платёж внесён ✓' : 'Расход добавлен ✓');
   }
 });
 
@@ -1301,17 +1146,7 @@ function showSavedToast(msg) {
 function deleteTx(id) {
   const tx = state.transactions.find(t => t.id === id);
   if (!tx) return;
-  if (tx.histOnly) {
-    // Импортированная операция баланс не меняла — просто убираем из истории
-    state.transactions = state.transactions.filter(t => t.id !== id);
-    saveState(state); recalc(); renderTransactions();
-    return;
-  }
-  if (tx.type === 'adjust') {
-    applyAdjust(tx.accountKey, tx.amount, tx.dir, -1);
-  } else if (tx.type === 'transfer') {
-    applyTransfer(tx.accountKey, tx.targetKey, tx.amount, -1);
-  } else if (tx.type === 'debtpay') {
+  if (tx.type === 'debtpay') {
     applyDebtPay(tx.accountKey, tx.targetKey, tx.amount, -1);
   } else {
     applyTxEffect(tx.accountKey, tx.type, tx.amount, -1);
@@ -1338,153 +1173,17 @@ document.getElementById('todayList').addEventListener('click', (e) => {
 
 renderTransactions();
 
-// ===== Импорт банковской выписки (PDF Сбера) =====
-(function () {
-  const STMT_API = 'https://ministerstvo.freyman.ru/api/statement/parse';
-  const btn = document.getElementById('impBtn');
-  const fileInp = document.getElementById('impFile');
-  const out = document.getElementById('impResult');
-  if (!btn || !fileInp || !out) return;
-
-  btn.addEventListener('click', () => fileInp.click());
-
-  fileInp.addEventListener('change', async () => {
-    const f = fileInp.files && fileInp.files[0];
-    if (!f) return;
-    out.innerHTML = '<div class="import-hint">Читаю выписку…</div>';
-    try {
-      const b64 = await new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(String(r.result).split(',')[1]);
-        r.onerror = () => rej(new Error('файл не читается'));
-        r.readAsDataURL(f);
-      });
-      const resp = await fetch(STMT_API, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pdf: b64 })
-      });
-      const data = await resp.json();
-      if (!data || !data.ops || !data.ops.length) {
-        out.innerHTML = '<div class="import-hint">Операций не нашлось. Проверь, что это PDF-выписка Сбера.</div>';
-      } else {
-        showImport(data);
-      }
-    } catch (e) {
-      out.innerHTML = '<div class="import-hint">Не получилось: ' + (e && e.message ? e.message : e) + '</div>';
-    }
-    fileInp.value = '';
-  });
-
-  function showImport(data) {
-    const existing = new Set((state.transactions || []).map(t => t.impKey).filter(Boolean));
-    const ops = data.ops;
-    const defAcc = data.defaultAccount || (data.card === 'debit' ? 'sberDebit' : 'sber');
-    const opts = Object.keys(accountMeta).map(k =>
-      '<option value="' + k + '"' + (k === defAcc ? ' selected' : '') + '>' + accountMeta[k].label + '</option>').join('');
-    const bankName = data.bank === 'tinkoff' ? 'Тинькофф' : (data.bank === 'sber' ? 'Сбер' : 'Банк');
-    const per = data.period ? (data.period.from + ' — ' + data.period.to) : '';
-    const rows = ops.map(function (o, idx) {
-      const dup = existing.has(o.key);
-      const name = String(o.comment || o.catRaw || 'Операция').replace(/</g, '&lt;');
-      const sel = dup
-        ? '<span class="imp-dupmark">внесено</span>'
-        : '<select class="imp-sel" data-idx="' + idx + '">' +
-            '<option value="expense"' + (o.kind === 'expense' ? ' selected' : '') + '>Расход</option>' +
-            '<option value="income"' + (o.kind === 'income' ? ' selected' : '') + '>Доход</option>' +
-            '<option value="skip"' + (o.kind === 'skip' ? ' selected' : '') + '>Пропустить</option>' +
-          '</select>';
-      return '<div class="imp-row' + (dup ? ' imp-dup' : '') + (o.flag ? ' imp-flag' : '') + '">' +
-        '<span class="d">' + o.date.slice(8, 10) + '.' + o.date.slice(5, 7) + '</span>' +
-        '<span class="n">' + name + (o.flag ? ' <b style="color:#C0842E">⚠</b>' : '') + '</span>' +
-        '<span class="a">' + fmt(o.amount) + '</span>' + sel +
-        '</div>';
-    }).join('');
-    out.innerHTML =
-      '<div class="imp-head"><div><b>' + bankName + ' · найдено: ' + ops.length + '</b>' +
-      (per ? '<br><span style="color:#A79B86;font-size:12.5px">' + per + '</span>' : '') +
-      '</div><select id="impAcc">' + opts + '</select></div>' +
-      '<div class="imp-hint2">Проверь тип каждой операции. Внутренние переводы стоят «Пропустить». ⚠ — реши сама (оплата человеку = Расход, себе/кредит = Пропустить).</div>' +
-      '<div class="imp-list">' + rows + '</div>' +
-      '<button type="button" class="imp-add" id="impAdd">Добавить в приложение</button>';
-    const addBtn = document.getElementById('impAdd');
-    const sels = [].slice.call(document.querySelectorAll('.imp-sel'));
-    function updateCount() {
-      let n = 0; sels.forEach(function (s) { if (s.value !== 'skip') n++; });
-      addBtn.textContent = n ? ('Добавить ' + n + ' оп. в приложение') : 'Нечего добавлять';
-      addBtn.disabled = !n;
-    }
-    sels.forEach(function (s) { s.addEventListener('change', updateCount); });
-    updateCount();
-    addBtn.onclick = function () {
-      const acc = document.getElementById('impAcc').value;
-      let n = 0;
-      sels.forEach(function (s) {
-        const kind = s.value;
-        if (kind === 'skip') return;
-        const o = ops[+s.dataset.idx];
-        // Импорт — только для истории/статистики: баланс НЕ трогаем
-        // (он выставляется по выпискам напрямую, внутренние переводы скрыты).
-        state.transactions.unshift({
-          id: Date.now() + Math.floor(Math.random() * 100000) + n,
-          date: o.date, type: kind, accountKey: acc, amount: o.amount,
-          comment: o.comment, category: o.category || 'other', impKey: o.key,
-          histOnly: true
-        });
-        n++;
-      });
-      saveState(state); recalc(); renderTransactions();
-      out.innerHTML = '<div class="import-hint">✓ Добавлено в статистику: ' + n + ' оп. Остатки счетов не тронуты — они выставлены по выпискам.</div>';
-    };
-  }
-})();
-
-// ===== Чистый старт по выпискам =====
-(function () {
-  const btn = document.getElementById('setupBtn');
-  if (!btn) return;
-  // Текущие остатки счетов по выпискам (закрытие периода = сейчас).
-  // Счета без выписок (Тинькофф вклады, Black, копилка, долги) не трогаем — их правишь вручную.
-  const CLOSING = {
-    sberDebit: 52.21,      // Сбер дебетовая, остаток на 24.07
-    tochka: 182970.65,     // Точка …422674, исходящий остаток
-    sber: 201765.61        // Сбер кредитка — общая задолженность (долг)
-  };
-  function setKey(k, v) {
-    const el = document.querySelector('[data-key="' + k + '"]');
-    if (!el) return;
-    el.value = v;
-    state[k] = v;
-  }
-  btn.onclick = function () {
-    if (!window.confirm('Очистить всю историю операций и выставить остатки Сбер-дебетовой, Точки и долга по кредитке по выпискам? Счета без выписок (вклады, Black, долги МТС/Тинькофф) останутся как есть — их поправишь вручную.')) return;
-    state.transactions = [];
-    Object.keys(CLOSING).forEach(function (k) { setKey(k, CLOSING[k]); });
-    saveState(state);
-    recalc();
-    renderTransactions();
-    if (typeof renderMonthStats === 'function') try { renderMonthStats(); } catch (e) {}
-    const hint = document.getElementById('setupHint');
-    if (hint) hint.innerHTML = '<b style="color:#6E9C6E">✓ Готово.</b> История очищена, остатки выставлены. Теперь загрузи выписки за месяц кнопкой выше.';
-    alert('Готово! История очищена, остатки выставлены по выпискам. Теперь загрузи выписки за месяц.');
-  };
-})();
-
 // ===== Статистика за месяц =====
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 function accAssetDelta(t) {
-  if (t.histOnly) return 0; // импорт из выписки — только для статистики, баланс не двигал
-  if (t.type === 'transfer') return 0; // перевод между своими счетами не меняет общую сумму активов
   const m = accountMeta[t.accountKey];
   if (!m || m.type !== 'asset') return 0;
-  if (t.type === 'adjust') return t.dir * t.amount; // корректировка меняет остаток на dir·сумму
   return t.type === 'income' ? t.amount : -t.amount;
 }
 function accDebtDelta(t) {
-  if (t.histOnly) return 0; // импорт из выписки — только для статистики, баланс не двигал
   if (t.type === 'debtpay') return -t.amount; // платёж уменьшает долг (гасим targetKey)
   const m = accountMeta[t.accountKey];
   if (!m || m.type !== 'credit') return 0;
-  if (t.type === 'adjust') return t.dir * t.amount;
   return t.type === 'expense' ? t.amount : -t.amount;
 }
 function sumCurrent(type) {
@@ -1506,8 +1205,6 @@ function computeMonth(ym) {
     if (tym === ym) {
       if (t.type === 'income') income += t.amount;
       else if (t.type === 'debtpay') debtPay += t.amount;
-      else if (t.type === 'transfer') { /* перевод между счетами — не расход и не доход */ }
-      else if (t.type === 'adjust') { /* корректировка баланса — не расход и не доход */ }
       else expense += t.amount;
       aIn += ad; dIn += dd;
     } else if (tym > ym) {
