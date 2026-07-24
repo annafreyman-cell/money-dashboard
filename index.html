@@ -740,12 +740,13 @@ const state = loadState();
 
 const EXPENSE_CAT_NAMES = {
   food: 'Еда и продукты', cafe: 'Кафе и рестораны', transport: 'Транспорт',
-  purchase: 'Покупки', health: 'Здоровье', beauty: 'Красота',
+  purchase: 'Покупки', health: 'Здоровье', beauty: 'Красота', education: 'Образование',
   home: 'Дом и быт', subscription: 'Подписки/сайты', other: 'Другое'
 };
 const incomeCategoryMeta = {
-  earn: 'Заработок',
+  earn: 'Заработок (ученики)',
   pension: 'Пенсия',
+  interest: 'Проценты по вкладам',
   benefit: 'Пособие',
   gift: 'От близких',
   other: 'Другое',
@@ -823,7 +824,7 @@ function recalc() {
 // ===== Кольцевая диаграмма расходов за месяц =====
 const CAT_COLORS = {
   food: '#8E63C9', cafe: '#E9C84A', transport: '#4E7A9E', purchase: '#DB8FBE',
-  health: '#5FB6A8', beauty: '#E8896B', home: '#6FB1D6', subscription: '#B98FE0', other: '#B0A8C0'
+  health: '#5FB6A8', beauty: '#E8896B', education: '#C77D4A', home: '#6FB1D6', subscription: '#B98FE0', other: '#B0A8C0'
 };
 function renderDonut() {
   const segs = document.getElementById('donutSegs');
@@ -861,7 +862,7 @@ window.__renderDonut = renderDonut;
 
 // ===== Кольцевая диаграмма доходов за месяц =====
 const INCOME_COLORS = {
-  earn: '#3E9E7A', pension: '#4E7A9E', benefit: '#E9C84A', gift: '#DB8FBE', other: '#B0A8C0'
+  earn: '#3E9E7A', pension: '#4E7A9E', interest: '#5FB6A8', benefit: '#E9C84A', gift: '#DB8FBE', other: '#B0A8C0'
 };
 function renderIncomeDonut() {
   const segs = document.getElementById('incDonutSegs');
