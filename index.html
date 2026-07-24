@@ -378,19 +378,9 @@
   <h2 class="screen-title"><img class="title-cat" id="cat-overview" alt="">Обзор</h2>
 
   <div class="today-card">
-    <div class="today-daybar">
-      <button type="button" class="day-nav" id="dayPrev" aria-label="Предыдущий день">‹</button>
-      <div class="today-label" id="todayDayLabel">Расходы · Сегодня</div>
-      <button type="button" class="day-nav" id="dayNext" aria-label="Следующий день">›</button>
-    </div>
-    <div class="today-stats">
-      <div class="ts"><span class="l">Расходы</span><span class="v" id="todayExpense">0 ₽</span></div>
-      <div class="ts"><span class="l">Доходы</span><span class="v in" id="todayIncome">0 ₽</span></div>
-      <div class="ts"><span class="l">Остаток</span><span class="v" id="todayNet">0 ₽</span></div>
-    </div>
+    <div class="today-label">Быстрое добавление</div>
     <button type="button" class="add-expense-btn" onclick="goAddExpense()">➕ Добавить расход</button>
     <button type="button" class="add-income-btn" onclick="goAddIncome()">➕ Добавить доход</button>
-    <div class="today-list" id="todayList"></div>
   </div>
 
   <div class="card">
@@ -1328,8 +1318,9 @@ document.getElementById('tx-body').addEventListener('click', (e) => {
   if (confirm('Удалить эту операцию? Остатки вернутся как было.')) deleteTx(id);
 });
 
-// удаление прямо из списка операций дня на «Обзоре»
-document.getElementById('todayList').addEventListener('click', (e) => {
+// удаление прямо из списка операций дня на «Обзоре» (дневной снимок убран)
+const _todayListEl = document.getElementById('todayList');
+if (_todayListEl) _todayListEl.addEventListener('click', (e) => {
   const btn = e.target.closest('.ti-del');
   if (!btn) return;
   const id = Number(btn.dataset.id);
