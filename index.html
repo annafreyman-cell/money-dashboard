@@ -110,6 +110,12 @@
   .imp-row.imp-dup { opacity: .42; }
   .imp-add { width: 100%; margin-top: 12px; background: #2F8F6E; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .imp-add[disabled] { background: #C7C0B4; cursor: default; }
+  .imp-hint2 { font-size: 12px; color: #8A7E68; margin: 10px 2px; line-height: 1.4; }
+  .imp-row { flex-wrap: wrap; }
+  .imp-row .a { color: #1C1B33; }
+  .imp-sel { font-size: 12px; padding: 4px 6px; border: 1px solid #D9CDB6; border-radius: 8px; background: #fff; font-family: inherit; }
+  .imp-row.imp-flag { background: #FBF3DF; border-radius: 8px; padding: 8px; }
+  .imp-dupmark { font-size: 11px; color: #A79B86; white-space: nowrap; }
   .tx-totals { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
   .tx-totals div span.lbl { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #A79B86; font-weight: 700; margin-bottom: 3px; }
   .tx-totals div span.v { font-size: 19px; font-weight: 800; }
@@ -1341,44 +1347,61 @@ renderTransactions();
 
   function showImport(data) {
     const existing = new Set((state.transactions || []).map(t => t.impKey).filter(Boolean));
-    const fresh = data.ops.filter(o => !existing.has(o.key));
-    const dupCount = data.ops.length - fresh.length;
-    const defAcc = data.card === 'debit' ? 'sberDebit' : 'sber';
+    const ops = data.ops;
+    const defAcc = data.defaultAccount || (data.card === 'debit' ? 'sberDebit' : 'sber');
     const opts = Object.keys(accountMeta).map(k =>
       '<option value="' + k + '"' + (k === defAcc ? ' selected' : '') + '>' + accountMeta[k].label + '</option>').join('');
-    const rows = data.ops.map(o => {
+    const bankName = data.bank === 'tinkoff' ? 'Тинькофф' : (data.bank === 'sber' ? 'Сбер' : 'Банк');
+    const per = data.period ? (data.period.from + ' — ' + data.period.to) : '';
+    const rows = ops.map(function (o, idx) {
       const dup = existing.has(o.key);
       const name = String(o.comment || o.catRaw || 'Операция').replace(/</g, '&lt;');
-      return '<div class="imp-row' + (dup ? ' imp-dup' : '') + '">' +
+      const sel = dup
+        ? '<span class="imp-dupmark">внесено</span>'
+        : '<select class="imp-sel" data-idx="' + idx + '">' +
+            '<option value="expense"' + (o.kind === 'expense' ? ' selected' : '') + '>Расход</option>' +
+            '<option value="income"' + (o.kind === 'income' ? ' selected' : '') + '>Доход</option>' +
+            '<option value="skip"' + (o.kind === 'skip' ? ' selected' : '') + '>Пропустить</option>' +
+          '</select>';
+      return '<div class="imp-row' + (dup ? ' imp-dup' : '') + (o.flag ? ' imp-flag' : '') + '">' +
         '<span class="d">' + o.date.slice(8, 10) + '.' + o.date.slice(5, 7) + '</span>' +
-        '<span class="n">' + name + '</span>' +
-        '<span class="a' + (o.type === 'income' ? ' in' : '') + '">' + (o.type === 'income' ? '+' : '−') + fmt(o.amount) + '</span>' +
+        '<span class="n">' + name + (o.flag ? ' <b style="color:#C0842E">⚠</b>' : '') + '</span>' +
+        '<span class="a">' + fmt(o.amount) + '</span>' + sel +
         '</div>';
     }).join('');
-    const per = data.period ? (data.period.from + ' — ' + data.period.to) : '';
     out.innerHTML =
-      '<div class="imp-head"><div><b>Найдено: ' + data.ops.length + '</b>' +
-      (dupCount ? ' · уже внесено: ' + dupCount : '') +
+      '<div class="imp-head"><div><b>' + bankName + ' · найдено: ' + ops.length + '</b>' +
       (per ? '<br><span style="color:#A79B86;font-size:12.5px">' + per + '</span>' : '') +
       '</div><select id="impAcc">' + opts + '</select></div>' +
+      '<div class="imp-hint2">Проверь тип каждой операции. Внутренние переводы стоят «Пропустить». ⚠ — реши сама (оплата человеку = Расход, себе/кредит = Пропустить).</div>' +
       '<div class="imp-list">' + rows + '</div>' +
-      '<button type="button" class="imp-add" id="impAdd"' + (fresh.length ? '' : ' disabled') + '>' +
-      (fresh.length ? 'Добавить ' + fresh.length + ' оп. в приложение' : 'Все операции уже внесены') + '</button>';
+      '<button type="button" class="imp-add" id="impAdd">Добавить в приложение</button>';
     const addBtn = document.getElementById('impAdd');
-    if (addBtn && fresh.length) addBtn.onclick = function () {
+    const sels = [].slice.call(document.querySelectorAll('.imp-sel'));
+    function updateCount() {
+      let n = 0; sels.forEach(function (s) { if (s.value !== 'skip') n++; });
+      addBtn.textContent = n ? ('Добавить ' + n + ' оп. в приложение') : 'Нечего добавлять';
+      addBtn.disabled = !n;
+    }
+    sels.forEach(function (s) { s.addEventListener('change', updateCount); });
+    updateCount();
+    addBtn.onclick = function () {
       const acc = document.getElementById('impAcc').value;
       let n = 0;
-      fresh.forEach(function (o) {
-        applyTxEffect(acc, o.type, o.amount, 1);
+      sels.forEach(function (s) {
+        const kind = s.value;
+        if (kind === 'skip') return;
+        const o = ops[+s.dataset.idx];
+        applyTxEffect(acc, kind, o.amount, 1);
         state.transactions.unshift({
-          id: Date.now() + Math.floor(Math.random() * 10000),
-          date: o.date, type: o.type, accountKey: acc, amount: o.amount,
-          comment: o.comment, category: o.category, impKey: o.key
+          id: Date.now() + Math.floor(Math.random() * 100000) + n,
+          date: o.date, type: kind, accountKey: acc, amount: o.amount,
+          comment: o.comment, category: o.category || 'other', impKey: o.key
         });
         n++;
       });
       saveState(state); recalc(); renderTransactions();
-      out.innerHTML = '<div class="import-hint">✓ Добавлено операций: ' + n + '. Остатки пересчитаны.</div>';
+      out.innerHTML = '<div class="import-hint">✓ Добавлено операций: ' + n + '. Остатки пересчитаны, внутренние переводы пропущены.</div>';
     };
   }
 })();
