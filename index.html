@@ -526,6 +526,7 @@
       <div class="card">
         <h4>Сбербанк — дебетовая карта</h4>
         <div class="field"><label>Счёт •• 5045</label><input type="number" class="asset-input" data-key="sberDebit" value="43.79"></div>
+        <div class="field"><label>Вклад «Универсальный»</label><input type="number" class="asset-input" data-key="sberVklad" value="10"></div>
         <span class="note-badge">Обычный расходный счёт, не путать с кредиткой Сбера в разделе «Долги»</span>
       </div>
       <div class="card">
@@ -754,7 +755,7 @@ function fmt(n) {
 
 function recalc() {
   const debtKeys = ['mts1','mts2','tcs1','tcs2','tcs3','sber'];
-  const assetKeys = ['tochka','vklad1','vklad2','vklad3','vklad4','black','kopilka','nakop','sberDebit'];
+  const assetKeys = ['tochka','vklad1','vklad2','vklad3','vklad4','black','kopilka','nakop','sberDebit','sberVklad'];
   let debts = 0, assets = 0;
   debtKeys.forEach(k => debts += parseFloat(document.querySelector(`[data-key="${k}"]`).value) || 0);
   assetKeys.forEach(k => assets += parseFloat(document.querySelector(`[data-key="${k}"]`).value) || 0);
@@ -993,6 +994,7 @@ const accountMeta = {
   kopilka:{ label: 'Копилка «ДР Кирилл»',    type: 'asset' },
   nakop:  { label: 'Накопительный счёт',     type: 'asset' },
   sberDebit: { label: 'Сбер — дебетовая карта', type: 'asset' },
+  sberVklad: { label: 'Сбер — Вклад «Универсальный»', type: 'asset' },
 };
 
 function todayStr() {
