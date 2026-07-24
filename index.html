@@ -1419,7 +1419,7 @@ renderTransactions();
     const defAcc = data.defaultAccount || (data.card === 'debit' ? 'sberDebit' : 'sber');
     const opts = Object.keys(accountMeta).map(k =>
       '<option value="' + k + '"' + (k === defAcc ? ' selected' : '') + '>' + accountMeta[k].label + '</option>').join('');
-    const bankName = data.bank === 'tinkoff' ? 'Тинькофф' : (data.bank === 'sber' ? 'Сбер' : 'Банк');
+    const bankName = data.bank === 'tinkoff' ? 'Тинькофф' : (data.bank === 'sber' ? 'Сбер' : (data.bank === 'tochka' ? 'Точка' : 'Банк'));
     const per = data.period ? (data.period.from + ' — ' + data.period.to) : '';
     const rows = ops.map(function (o, idx) {
       const dup = existing.has(o.key);
