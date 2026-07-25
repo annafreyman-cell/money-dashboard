@@ -155,6 +155,9 @@
   .tx-table td { padding: 9px 5px; border-bottom: 1px solid #F4EFE6; }
   .tx-table td.amt-income { color: #2F8F6E; font-weight: 700; text-align: right; }
   .tx-table td.amt-expense { color: #D0603F; font-weight: 700; text-align: right; }
+  .tx-search { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid #E0D6C6; border-radius: 12px; font-size: 15px; font-family: inherit; color: #4E4842; background: #FBF8F3; }
+  .tx-search:focus { outline: none; border-color: #B98FE0; }
+  .tx-search-count { font-size: 12.5px; color: #A79B86; margin-top: 6px; min-height: 16px; }
   .tx-del { background: none; border: none; color: #B7AF9C; cursor: pointer; font-size: 17px; }
   .tx-del:hover { color: #D0603F; }
   .tx-scroll { overflow-x: auto; }
@@ -681,6 +684,10 @@
         <button type="submit">Добавить</button>
       </form>
     </div>
+    <div class="tx-card">
+      <input type="search" id="tx-search" class="tx-search" placeholder="🔎 Поиск операции: образование, 37990, тинькофф…">
+      <div class="tx-search-count" id="tx-search-count"></div>
+    </div>
     <div class="tx-card tx-scroll">
       <table class="tx-table">
         <thead>
@@ -1127,7 +1134,10 @@ function applyTxEffect(accountKey, type, amount, sign) {
 
 function renderTransactions() {
   const tbody = document.getElementById('tx-body');
-  const txs = state.transactions;
+  // Показываем общим списком по дате (новые сверху), а не пачками по банкам
+  const txs = (state.transactions || []).slice().sort(function (a, b) {
+    return ((b.date || '') + ' ' + (b.time || '00:00')).localeCompare((a.date || '') + ' ' + (a.time || '00:00'));
+  });
   if (txs.length === 0) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#A79B86;padding:14px;">Операций пока нет — добавь первую выше</td></tr>';
   } else {
@@ -1175,6 +1185,26 @@ function renderTransactions() {
     `).join('');
   }
   renderImportStatus();
+  applyTxFilter();
+}
+
+// Поиск по списку операций (по дате/типу/счёту/сумме/комменту). «37990» находит «37 990».
+function applyTxFilter() {
+  const inp = document.getElementById('tx-search');
+  if (!inp) return;
+  const q = inp.value.trim().toLowerCase();
+  const qNum = q.replace(/\s/g, '');
+  const rows = document.querySelectorAll('#tx-body tr');
+  let shown = 0;
+  rows.forEach(function (r) {
+    if (r.querySelector('td[colspan]')) return;
+    const hay = r.textContent.toLowerCase();
+    const match = !q || hay.includes(q) || hay.replace(/\s/g, '').includes(qNum);
+    r.style.display = match ? '' : 'none';
+    if (match) shown++;
+  });
+  const cnt = document.getElementById('tx-search-count');
+  if (cnt) cnt.textContent = q ? ('Найдено: ' + shown) : '';
 }
 
 // Чеклист: сколько операций из выписок загружено по каждому счёту
@@ -1365,6 +1395,9 @@ document.getElementById('tx-body').addEventListener('click', (e) => {
   const id = Number(e.target.dataset.id);
   if (confirm('Удалить эту операцию? Остатки вернутся как было.')) deleteTx(id);
 });
+
+const _txSearch = document.getElementById('tx-search');
+if (_txSearch) _txSearch.addEventListener('input', applyTxFilter);
 
 // удаление прямо из списка операций дня на «Обзоре» (дневной снимок убран)
 const _todayListEl = document.getElementById('todayList');
