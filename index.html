@@ -158,6 +158,13 @@
   .tx-search { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid #E0D6C6; border-radius: 12px; font-size: 15px; font-family: inherit; color: #4E4842; background: #FBF8F3; }
   .tx-search:focus { outline: none; border-color: #B98FE0; }
   .tx-search-count { font-size: 12.5px; color: #A79B86; margin-top: 6px; min-height: 16px; }
+  .memo-box { background: #EFEBFB; border-radius: 14px; margin-bottom: 14px; overflow: hidden; }
+  .memo-head { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; cursor: pointer; font-weight: 800; font-size: 14px; color: #5B4B8A; }
+  .memo-arrow { color: #8E63C9; }
+  .memo-body { padding: 0 16px 14px; }
+  .memo-body ol { margin: 4px 0 0; padding-left: 20px; }
+  .memo-body li { font-size: 13.5px; color: #4E4842; margin-bottom: 8px; line-height: 1.4; }
+  .memo-note { font-size: 12.5px; color: #7A72A0; background: #fff; border-radius: 10px; padding: 9px 11px; margin-top: 6px; }
   .card-clickable { cursor: pointer; }
   .tap-hint { font-size: 12px; font-weight: 600; color: #B98FE0; margin-left: 4px; }
   .cat-detail { margin-top: 12px; border-top: 1px dashed #E0D6C6; padding-top: 10px; }
@@ -609,6 +616,22 @@
       </div>
       <div class="tx-totals" id="tx-income-breakdown"></div>
 
+      <div class="memo-box">
+        <div class="memo-head" onclick="toggleMemo()">
+          <span>📋 Памятка: конец месяца</span>
+          <span class="memo-arrow" id="memo-arrow">▾</span>
+        </div>
+        <div class="memo-body" id="memo-body" hidden>
+          <ol>
+            <li><b>Выгрузи выписки за весь месяц</b> (с 01 по последнее число) по всем банкам и загрузи кнопкой ниже. Новое добавится, старое не задвоится, остатки обновятся сами.</li>
+            <li>Проверь «📥 Загружено из выписок» — все счета должны быть с ✅.</li>
+            <li>Впиши вручную то, чего нет в выписках: <b>Тинькофф Black</b> и остатки <b>рассрочек МТС / Тинькофф</b> (раздел «Долги»).</li>
+            <li>Готово — картина за месяц полная. Прошлые месяцы смотри стрелками ‹ › вверху.</li>
+          </ol>
+          <div class="memo-note">Забыла вовремя? Не страшно — выписку за прошлый период можно выгрузить в любой день, операции сами встанут по своим датам.</div>
+        </div>
+      </div>
+
       <div class="imp-status-box" id="impStatusBox">
         <div class="imp-status-title">📥 Загружено из выписок</div>
         <div id="impStatusList"></div>
@@ -951,6 +974,14 @@ function toggleDetail(type) {
   else { box.hidden = true; if (hint) hint.textContent = 'нажми ▾'; }
 }
 window.toggleDetail = toggleDetail;
+function toggleMemo() {
+  const b = document.getElementById('memo-body');
+  const a = document.getElementById('memo-arrow');
+  if (!b) return;
+  b.hidden = !b.hidden;
+  if (a) a.textContent = b.hidden ? '▾' : '▴';
+}
+window.toggleMemo = toggleMemo;
 ['income', 'expense'].forEach(function (type) {
   const box = document.getElementById(type + '-detail');
   if (!box) return;
