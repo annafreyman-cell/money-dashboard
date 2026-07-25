@@ -158,6 +158,16 @@
   .tx-search { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid #E0D6C6; border-radius: 12px; font-size: 15px; font-family: inherit; color: #4E4842; background: #FBF8F3; }
   .tx-search:focus { outline: none; border-color: #B98FE0; }
   .tx-search-count { font-size: 12.5px; color: #A79B86; margin-top: 6px; min-height: 16px; }
+  .card-clickable { cursor: pointer; }
+  .tap-hint { font-size: 12px; font-weight: 600; color: #B98FE0; margin-left: 4px; }
+  .cat-detail { margin-top: 12px; border-top: 1px dashed #E0D6C6; padding-top: 10px; }
+  .cd-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #F0EAE0; }
+  .cd-row:last-child { border-bottom: none; }
+  .cd-date { font-size: 12px; color: #A79B86; width: 40px; flex-shrink: 0; }
+  .cd-name { flex: 1; min-width: 0; font-size: 13.5px; color: #4E4842; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cd-cat { font-size: 12.5px; font-family: inherit; border: 1px solid #D8CCB6; border-radius: 8px; padding: 4px 6px; background: #FBF8F3; color: #5B4B3A; max-width: 128px; }
+  .cd-amt { font-size: 13.5px; font-weight: 800; white-space: nowrap; flex-shrink: 0; }
+  .cd-empty { color: #A79B86; font-size: 13px; padding: 6px 0; }
   .tx-del { background: none; border: none; color: #B7AF9C; cursor: pointer; font-size: 17px; }
   .tx-del:hover { color: #D0603F; }
   .tx-scroll { overflow-x: auto; }
@@ -390,8 +400,8 @@
 <div class="screen" data-screen="overview">
   <h2 class="screen-title"><img class="title-cat" id="cat-overview" alt="">Обзор</h2>
 
-  <div class="card">
-    <div class="donut-title">Доходы за месяц</div>
+  <div class="card card-clickable" onclick="toggleDetail('income')">
+    <div class="donut-title">Доходы за месяц <span class="tap-hint" id="income-hint">нажми ▾</span></div>
     <div class="donut-wrap">
       <div class="donut">
         <svg viewBox="0 0 42 42" width="140" height="140">
@@ -402,10 +412,11 @@
       </div>
       <div class="donut-legend" id="incDonutLegend"></div>
     </div>
+    <div class="cat-detail" id="income-detail" hidden></div>
   </div>
 
-  <div class="card">
-    <div class="donut-title">Расходы за месяц</div>
+  <div class="card card-clickable" onclick="toggleDetail('expense')">
+    <div class="donut-title">Расходы за месяц <span class="tap-hint" id="expense-hint">нажми ▾</span></div>
     <div class="donut-wrap">
       <div class="donut">
         <svg viewBox="0 0 42 42" width="140" height="140">
@@ -416,6 +427,7 @@
       </div>
       <div class="donut-legend" id="donutLegend"></div>
     </div>
+    <div class="cat-detail" id="expense-detail" hidden></div>
   </div>
 
   <div class="today-card">
@@ -904,6 +916,61 @@ function renderIncomeDonut() {
     : '<div style="color:#8A82A0;font-size:13px;">Доходов в этом месяце пока нет</div>';
 }
 window.__renderIncomeDonut = renderIncomeDonut;
+
+// ===== Разворачивающийся список операций под кольцами (клик по «Доходы»/«Расходы») =====
+function buildCatDetail(type) {
+  const box = document.getElementById(type + '-detail');
+  if (!box) return;
+  const ym = todayStrLocal().slice(0, 7);
+  const ops = (state.transactions || [])
+    .filter(t => t.type === type && (t.date || '').slice(0, 7) === ym)
+    .sort((a, b) => ((b.date || '') + ' ' + (b.time || '')).localeCompare((a.date || '') + ' ' + (a.time || '')));
+  if (!ops.length) { box.innerHTML = '<div class="cd-empty">Операций в этом месяце нет</div>'; return; }
+  const meta = type === 'income' ? incomeCategoryMeta : EXPENSE_CAT_NAMES;
+  const optsHtml = function (cat) {
+    return Object.keys(meta).map(function (k) {
+      return '<option value="' + k + '"' + (k === cat ? ' selected' : '') + '>' + meta[k] + '</option>';
+    }).join('');
+  };
+  box.innerHTML = ops.map(function (t) {
+    const cat = t.category || 'other';
+    const nm = (t.comment && t.comment.trim()) ? t.comment : (meta[cat] || 'Операция');
+    return '<div class="cd-row">' +
+      '<span class="cd-date">' + (t.date || '').slice(8, 10) + '.' + (t.date || '').slice(5, 7) + '</span>' +
+      '<span class="cd-name">' + String(nm).replace(/</g, '&lt;') + '</span>' +
+      '<select class="cd-cat" data-id="' + t.id + '">' + optsHtml(cat) + '</select>' +
+      '<span class="cd-amt">' + fmt(t.amount) + '</span>' +
+      '</div>';
+  }).join('');
+}
+function toggleDetail(type) {
+  const box = document.getElementById(type + '-detail');
+  const hint = document.getElementById(type + '-hint');
+  if (!box) return;
+  if (box.hidden) { buildCatDetail(type); box.hidden = false; if (hint) hint.textContent = 'свернуть ▴'; }
+  else { box.hidden = true; if (hint) hint.textContent = 'нажми ▾'; }
+}
+window.toggleDetail = toggleDetail;
+['income', 'expense'].forEach(function (type) {
+  const box = document.getElementById(type + '-detail');
+  if (!box) return;
+  // клик внутри списка не должен сворачивать карточку
+  box.addEventListener('click', function (e) { e.stopPropagation(); });
+  box.addEventListener('change', function (e) {
+    const sel = e.target.closest('.cd-cat');
+    if (!sel) return;
+    e.stopPropagation();
+    const id = Number(sel.dataset.id);
+    const tx = (state.transactions || []).find(function (t) { return t.id === id; });
+    if (!tx) return;
+    tx.category = sel.value;
+    saveState(state);
+    if (typeof renderDonut === 'function') renderDonut();
+    if (typeof renderIncomeDonut === 'function') renderIncomeDonut();
+    if (typeof renderTransactions === 'function') renderTransactions();
+    buildCatDetail(type);
+  });
+});
 
 // ===== Расходы за день (главный экран) с переключателем дней =====
 function todayStrLocal() {
