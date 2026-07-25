@@ -1571,8 +1571,22 @@ renderTransactions();
         });
         n++;
       });
+      // Остаток счёта / долг берём прямо из выписки (перезапись, не прибавление — при перезаливке не задвоится)
+      let balMsg = '';
+      function setBal(key, val) {
+        const el = document.querySelector('[data-key="' + key + '"]');
+        if (!el) return false;
+        el.value = Math.round(val * 100) / 100;
+        state[key] = el.value;
+        return true;
+      }
+      if (data.card === 'credit' && data.debt != null) {
+        if (setBal('sber', data.debt)) balMsg = ' Долг по кредитке выставлен: ' + fmt(data.debt) + '.';
+      } else if (data.closing != null) {
+        if (setBal(acc, data.closing)) balMsg = ' Остаток счёта выставлен по выписке: ' + fmt(data.closing) + '.';
+      }
       saveState(state); recalc(); renderTransactions();
-      out.innerHTML = '<div class="import-hint">✓ Добавлено в статистику: ' + n + ' оп. Остатки счетов не тронуты — они выставлены по выпискам.</div>';
+      out.innerHTML = '<div class="import-hint">✓ Добавлено в статистику: ' + n + ' оп.' + (balMsg || ' Остаток счёта в этой выписке не указан — впиши вручную.') + '</div>';
     };
   }
 })();
