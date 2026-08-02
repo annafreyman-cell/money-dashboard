@@ -1317,18 +1317,26 @@ function renderImportStatus() {
     { key: 'black',     label: 'Тинькофф Black' },
     { key: 'tochka',    label: 'Точка' },
   ];
-  const counts = {};
+  const counts = {}, dmin = {}, dmax = {};
   (state.transactions || []).forEach(t => {
     if (!t.histOnly) return;
-    counts[t.accountKey] = (counts[t.accountKey] || 0) + 1;
+    const k = t.accountKey;
+    counts[k] = (counts[k] || 0) + 1;
+    const d = t.date || '';
+    if (d) {
+      if (!dmin[k] || d < dmin[k]) dmin[k] = d;
+      if (!dmax[k] || d > dmax[k]) dmax[k] = d;
+    }
   });
+  const ddmm = iso => iso ? (iso.slice(8, 10) + '.' + iso.slice(5, 7)) : '';
   let total = 0;
   const rows = WATCH.map(w => {
     const n = counts[w.key] || 0; total += n;
     const done = n > 0;
+    const range = (done && dmin[w.key]) ? (ddmm(dmin[w.key]) + '–' + ddmm(dmax[w.key])) : '';
     return '<div class="imp-status-row">' +
       '<span class="s-name">' + (done ? '✅ ' : '⬜️ ') + w.label + '</span>' +
-      '<span class="s-cnt' + (done ? '' : ' zero') + '">' + (done ? (n + ' оп.') : 'не загружено') + '</span>' +
+      '<span class="s-cnt' + (done ? '' : ' zero') + '">' + (done ? (n + ' оп. · ' + range) : 'не загружено') + '</span>' +
       '</div>';
   }).join('');
   box.innerHTML = rows +
