@@ -86,6 +86,13 @@
 .month-nav .mn-btn{width:42px;height:42px;border:0;border-radius:12px;background:#EFEAF6;color:#5b3fa8;font-size:24px;font-weight:800;cursor:pointer;line-height:1}
 .month-nav .mn-btn:active{transform:translateY(1px)}
 .month-nav .mn-label{font-size:17px;font-weight:800;color:#29140F;min-width:160px;text-align:center}
+.free-card .fc-title{font-size:16px;font-weight:800;margin-bottom:8px;color:#29140F}
+.free-card .fc-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:15px;border-top:1px solid #F0ECF6}
+.free-card .fc-row:first-of-type{border-top:0}
+.free-card .fc-row.total{border-top:2px solid #E0D8EE;margin-top:2px;font-weight:800;font-size:17px}
+.free-card .fc-v{font-weight:700;white-space:nowrap}
+.free-card .fc-v.minus{color:#C0392B}
+.free-card .fc-row.total .fc-v{color:#5b3fa8}
   .income-card { background: #FFFFFF; border-radius: 20px; padding: 22px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); }
   .income-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .income-row label { font-size: 16px; color: #8B8698; min-width: 140px; font-weight: 600; }
@@ -445,6 +452,14 @@
       <div class="donut-legend" id="donutLegend"></div>
     </div>
     <div class="cat-detail" id="expense-detail" hidden></div>
+  </div>
+
+  <div class="card free-card">
+    <div class="fc-title">Сколько остаётся на жизнь</div>
+    <div class="fc-row"><span>Заработала за месяц</span><span class="fc-v" id="fc-income">—</span></div>
+    <div class="fc-row"><span>Кредиты / рассрочки</span><span class="fc-v minus" id="fc-loans">—</span></div>
+    <div class="fc-row"><span>Подписки / сервисы</span><span class="fc-v minus" id="fc-subs">—</span></div>
+    <div class="fc-row total"><span>Остаётся свободных</span><span class="fc-v" id="fc-free">—</span></div>
   </div>
 
   <div class="today-card">
@@ -938,6 +953,22 @@ window.__renderDonut = renderDonut;
 const INCOME_COLORS = {
   earn: '#3E9E7A', pension: '#4E7A9E', interest: '#5FB6A8', benefit: '#E9C84A', gift: '#DB8FBE', other: '#B0A8C0'
 };
+function renderFreeMoney(){
+  var ym = (typeof ovMonthOrNow==='function') ? ovMonthOrNow() : todayStrLocal().slice(0,7);
+  var mInc = 0;
+  (state.transactions||[]).forEach(function(t){ if(t.type==='income' && (t.date||'').slice(0,7)===ym) mInc += (parseFloat(t.amount)||0); });
+  var payments = 0;
+  ['mts1pay','mts2pay','tcs1pay','tcs2pay','tcs3pay','tcsPlatpay'].forEach(function(k){ var el=document.querySelector('[data-key="'+k+'"]'); if(el) payments += parseFloat(el.value)||0; });
+  var subs = 0;
+  ['subPhone','subTilda','subClaude','subTimeweb','subChatgpt'].forEach(function(k){ var el=document.querySelector('[data-key="'+k+'"]'); if(el) subs += parseFloat(el.value)||0; });
+  var free = mInc - payments - subs;
+  var set = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
+  set('fc-income', fmt(mInc));
+  set('fc-loans', '− ' + fmt(payments));
+  set('fc-subs', '− ' + fmt(subs));
+  set('fc-free', fmt(free));
+}
+
 function renderIncomeDonut() {
   const segs = document.getElementById('incDonutSegs');
   if (!segs) return;
@@ -952,6 +983,7 @@ function renderIncomeDonut() {
   const entries = Object.entries(by).sort((a, b) => b[1] - a[1]);
   const total = entries.reduce((a, e) => a + e[1], 0);
   document.getElementById('incDonutTotal').textContent = fmt(total);
+  if(typeof renderFreeMoney==='function') renderFreeMoney();
   segs.innerHTML = '';
   let off = 0;
   entries.forEach(([c, v]) => {
