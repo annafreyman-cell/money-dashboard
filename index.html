@@ -523,6 +523,8 @@
         <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="tcs2pay" value="2730"></div>
         <div class="field"><label>Долг 3 (1 авг, 3 платежа)</label><input type="number" class="debt-input" data-key="tcs3" value="36431.82"></div>
         <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="tcs3pay" value="12500"></div>
+        <div class="field"><label>Платинум (кредитка, 4 платежа)</label><input type="number" class="debt-input" data-key="tcsPlat" value="0"></div>
+        <div class="field"><label>Ежемесячный платёж</label><input type="number" class="info-input" data-key="tcsPlatpay" value="2600"></div>
       </div>
       <div class="card">
         <h4>Сбер — кредитная карта</h4>
@@ -812,7 +814,7 @@ function fmt(n) {
 }
 
 function recalc() {
-  const debtKeys = ['mts1','mts2','tcs1','tcs2','tcs3','sber'];
+  const debtKeys = ['mts1','mts2','tcs1','tcs2','tcs3','tcsPlat','sber'];
   const assetKeys = ['tochka','tochkaDep','vklad1','vklad2','vklad3','vklad4','black','kopilka','nakop','sberDebit','sberVklad'];
   let debts = 0, assets = 0;
   debtKeys.forEach(k => debts += parseFloat(document.querySelector(`[data-key="${k}"]`).value) || 0);
@@ -829,7 +831,7 @@ function recalc() {
     sberFreeEl.value = fmt(lim - debt);
   }
 
-  const payKeys = ['mts1pay','mts2pay','tcs1pay','tcs2pay','tcs3pay'];
+  const payKeys = ['mts1pay','mts2pay','tcs1pay','tcs2pay','tcs3pay','tcsPlatpay'];
   let payments = 0;
   payKeys.forEach(k => { const el = document.querySelector(`[data-key="${k}"]`); if (el) payments += parseFloat(el.value) || 0; });
   document.getElementById('sum-payments').textContent = fmt(payments);
@@ -844,7 +846,7 @@ function recalc() {
   const getVal = k => { const el = document.querySelector(`[data-key="${k}"]`); return el ? (parseFloat(el.value) || 0) : 0; };
   if (document.getElementById('plan-mts')) {
     const planMts = getVal('mts1pay') + getVal('mts2pay');
-    const planTcs = getVal('tcs1pay') + getVal('tcs2pay') + getVal('tcs3pay');
+    const planTcs = getVal('tcs1pay') + getVal('tcs2pay') + getVal('tcs3pay') + getVal('tcsPlatpay');
     const planSber = getVal('sberPay');
     document.getElementById('plan-mts').textContent = fmt(planMts);
     document.getElementById('plan-tcs').textContent = fmt(planTcs);
@@ -1105,6 +1107,7 @@ const accountMeta = {
   tcs1:   { label: 'Тинькофф — Долг 1',      type: 'credit' },
   tcs2:   { label: 'Тинькофф — Долг 2',      type: 'credit' },
   tcs3:   { label: 'Тинькофф — Долг 3',      type: 'credit' },
+  tcsPlat:{ label: 'Тинькофф — Платинум',     type: 'credit' },
   sber:   { label: 'Сбер — кредитка',        type: 'credit' },
   tochka: { label: 'Точка',                  type: 'asset' },
   tochkaDep: { label: 'Точка — депозит',     type: 'asset' },
