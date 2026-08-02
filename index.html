@@ -563,8 +563,8 @@
       </div>
       <div class="card">
         <h4>Точка (бизнес, ИП)</h4>
-        <div class="field"><label>Депозит</label><input type="number" class="asset-input" data-key="tochka" value="181923.47"></div>
-        <span class="note-badge">Неснимаемый до 23 июля</span>
+        <div class="field"><label>Текущий счёт</label><input type="number" class="asset-input" data-key="tochka" value="181923.47"></div>
+        <div class="field"><label>Депозит</label><input type="number" class="asset-input" data-key="tochkaDep" value="0"></div>
       </div>
       <div class="card">
         <h4>Тинькофф — вклады</h4>
@@ -813,7 +813,7 @@ function fmt(n) {
 
 function recalc() {
   const debtKeys = ['mts1','mts2','tcs1','tcs2','tcs3','sber'];
-  const assetKeys = ['tochka','vklad1','vklad2','vklad3','vklad4','black','kopilka','nakop','sberDebit','sberVklad'];
+  const assetKeys = ['tochka','tochkaDep','vklad1','vklad2','vklad3','vklad4','black','kopilka','nakop','sberDebit','sberVklad'];
   let debts = 0, assets = 0;
   debtKeys.forEach(k => debts += parseFloat(document.querySelector(`[data-key="${k}"]`).value) || 0);
   assetKeys.forEach(k => assets += parseFloat(document.querySelector(`[data-key="${k}"]`).value) || 0);
@@ -1107,6 +1107,7 @@ const accountMeta = {
   tcs3:   { label: 'Тинькофф — Долг 3',      type: 'credit' },
   sber:   { label: 'Сбер — кредитка',        type: 'credit' },
   tochka: { label: 'Точка',                  type: 'asset' },
+  tochkaDep: { label: 'Точка — депозит',     type: 'asset' },
   vklad1: { label: 'Тинькофф — Вклад 1',     type: 'asset' },
   vklad2: { label: 'Тинькофф — Вклад 2',     type: 'asset' },
   vklad3: { label: 'Тинькофф — Вклад 3',     type: 'asset' },
