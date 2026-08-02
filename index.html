@@ -93,6 +93,8 @@
 .free-card .fc-v{font-weight:700;white-space:nowrap}
 .free-card .fc-v.minus{color:#C0392B}
 .free-card .fc-row.total .fc-v{color:#5b3fa8}
+.seed-btn{width:100%;border:0;border-radius:12px;padding:13px;font-weight:800;font-size:15px;background:#5b3fa8;color:#fff;cursor:pointer;margin:0 0 14px}
+.seed-btn:active{transform:translateY(1px)}
   .income-card { background: #FFFFFF; border-radius: 20px; padding: 22px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); }
   .income-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .income-row label { font-size: 16px; color: #8B8698; min-width: 140px; font-weight: 600; }
@@ -574,6 +576,7 @@
 
 <div class="screen" data-screen="assets" hidden>
   <h2 class="screen-title"><img class="title-cat" id="cat-assets" alt="">Активы</h2>
+  <button type="button" class="seed-btn" onclick="seedBalances()">📥 Вписать остатки на 02.08 (нажми один раз)</button>
   <section>
     <div class="grid">
       <div class="card">
@@ -837,6 +840,25 @@ function fmt(n) {
   const s = String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   return neg + s + ' ₽';
 }
+
+function seedBalances(){
+  var vals = {
+    black:95.45, kopilka:5644, nakop:0.61,
+    vklad1:100986.3, vklad2:100953.42, vklad3:504931.51, vklad4:50493.15,
+    sberDebit:52.21, sberVklad:10, tochka:0, tochkaDep:170000,
+    sber:188281.57, tcs1:7939.49, tcs2:34535.31, tcs3:23962.76,
+    tcsPlat:10020, mts1:32596.30, mts2:13950.95
+  };
+  Object.keys(vals).forEach(function(k){
+    state[k] = vals[k];
+    var el = document.querySelector('[data-key="'+k+'"]');
+    if(el) el.value = vals[k];
+  });
+  saveState(state);
+  if(typeof recalc==='function') recalc();
+  alert('Готово! Остатки на 02.08 записаны \u2705 Проверь Активы и Долги.');
+}
+window.seedBalances = seedBalances;
 
 function recalc() {
   const debtKeys = ['mts1','mts2','tcs1','tcs2','tcs3','tcsPlat','sber'];
