@@ -82,6 +82,10 @@
   }
   .schedule .step .amt { font-size: 20px; font-weight: 800; color: #1C1B33; }
   .schedule .step .date { font-size: 14px; color: #A79B86; }
+.month-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 0 14px}
+.month-nav .mn-btn{width:42px;height:42px;border:0;border-radius:12px;background:#EFEAF6;color:#5b3fa8;font-size:24px;font-weight:800;cursor:pointer;line-height:1}
+.month-nav .mn-btn:active{transform:translateY(1px)}
+.month-nav .mn-label{font-size:17px;font-weight:800;color:#29140F;min-width:160px;text-align:center}
   .income-card { background: #FFFFFF; border-radius: 20px; padding: 22px; box-shadow: 0 4px 18px rgba(28,27,51,0.06); }
   .income-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .income-row label { font-size: 16px; color: #8B8698; min-width: 140px; font-weight: 600; }
@@ -406,6 +410,12 @@
 
 <div class="screen" data-screen="overview">
   <h2 class="screen-title"><img class="title-cat" id="cat-overview" alt="">Обзор</h2>
+
+  <div class="month-nav">
+    <button type="button" class="mn-btn" onclick="ovShiftMonth(-1)">‹</button>
+    <span class="mn-label" id="ov-month-label">—</span>
+    <button type="button" class="mn-btn" onclick="ovShiftMonth(1)">›</button>
+  </div>
 
   <div class="card card-clickable" onclick="toggleDetail('income')">
     <div class="donut-title">Доходы за месяц <span class="tap-hint" id="income-hint">нажми ▾</span></div>
@@ -870,10 +880,30 @@ const CAT_COLORS = {
   food: '#8E63C9', cafe: '#E9C84A', transport: '#4E7A9E', purchase: '#DB8FBE',
   health: '#5FB6A8', beauty: '#E8896B', education: '#C77D4A', home: '#6FB1D6', subscription: '#B98FE0', other: '#B0A8C0'
 };
+// ===== Переключатель месяца на Обзоре =====
+var MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+var ovMonth = null;
+function ovMonthOrNow(){ if(!ovMonth) ovMonth = todayStrLocal().slice(0,7); return ovMonth; }
+function ovUpdateLabel(){
+  var el = document.getElementById('ov-month-label'); if(!el) return;
+  var ym = ovMonthOrNow(); var y = ym.slice(0,4), m = parseInt(ym.slice(5,7),10);
+  el.textContent = MONTHS_RU[m-1] + ' ' + y;
+}
+function ovShiftMonth(delta){
+  var ym = ovMonthOrNow(); var y = parseInt(ym.slice(0,4),10), m = parseInt(ym.slice(5,7),10);
+  m += delta; while(m<1){m+=12;y-=1;} while(m>12){m-=12;y+=1;}
+  ovMonth = y + '-' + String(m).padStart(2,'0');
+  ovUpdateLabel();
+  if(typeof renderDonut==='function') renderDonut();
+  if(typeof renderIncomeDonut==='function') renderIncomeDonut();
+  ['income','expense'].forEach(function(t){ var box=document.getElementById(t+'-detail'); if(box && !box.hidden) buildCatDetail(t); });
+}
+window.ovShiftMonth = ovShiftMonth;
+
 function renderDonut() {
   const segs = document.getElementById('donutSegs');
   if (!segs) return;
-  const ym = todayStrLocal().slice(0, 7);
+  const ym = ovMonthOrNow();
   const by = {};
   (state.transactions || []).forEach(t => {
     if (t.type === 'expense' && (t.date || '').slice(0, 7) === ym) {
@@ -911,7 +941,7 @@ const INCOME_COLORS = {
 function renderIncomeDonut() {
   const segs = document.getElementById('incDonutSegs');
   if (!segs) return;
-  const ym = todayStrLocal().slice(0, 7);
+  const ym = ovMonthOrNow();
   const by = {};
   (state.transactions || []).forEach(t => {
     if (t.type === 'income' && (t.date || '').slice(0, 7) === ym) {
@@ -946,7 +976,7 @@ window.__renderIncomeDonut = renderIncomeDonut;
 function buildCatDetail(type) {
   const box = document.getElementById(type + '-detail');
   if (!box) return;
-  const ym = todayStrLocal().slice(0, 7);
+  const ym = ovMonthOrNow();
   const ops = (state.transactions || [])
     .filter(t => t.type === type && (t.date || '').slice(0, 7) === ym)
     .sort((a, b) => ((b.date || '') + ' ' + (b.time || '')).localeCompare((a.date || '') + ' ' + (a.time || '')));
@@ -1821,6 +1851,7 @@ function showScreen(name) {
 }
 navButtons.forEach(b => b.addEventListener('click', () => showScreen(b.dataset.screen)));
 showScreen(localStorage.getItem(NAV_KEY) || 'overview');
+ovUpdateLabel();
 renderToday();
 renderDonut();
 
